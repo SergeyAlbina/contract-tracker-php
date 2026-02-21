@@ -6,13 +6,11 @@
     "lib": ["ES2021"],
     "outDir": "./dist",
     "rootDir": "./src",
-    "incremental": true,
+    "incremental": false,
+    "strictPropertyInitialization": false,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-    "paths": {
-      "@ct/shared": ["../../packages/shared/src/index.ts"]
-    }
+    "emitDecoratorMetadata": true
   },
-  "include": ["src", "prisma"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }

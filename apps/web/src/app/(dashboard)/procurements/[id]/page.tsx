@@ -141,7 +141,7 @@ export default function ProcurementDetailPage() {
 
       <Paper sx={{ p: 3, mb: 3 }}>
         <Grid container spacing={4}>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="subtitle2" gutterBottom>Информация</Typography>
             <Divider sx={{ mb: 1 }} />
             <Box sx={{ display: 'flex', py: 0.75 }}>
@@ -163,7 +163,7 @@ export default function ProcurementDetailPage() {
               </Box>
             )}
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="subtitle2" gutterBottom>Переход по статусам</Typography>
             <Divider sx={{ mb: 1 }} />
             {Object.entries(STATUS_LABELS).map(([key, label]) => (

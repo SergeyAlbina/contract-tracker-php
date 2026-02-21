@@ -11,17 +11,14 @@ export default function ThemeRegistry({ children }: { children: React.ReactNode 
   const [{ cache, flush }] = useState(() => {
     const cache = createCache({ key: 'mui' });
     cache.compat = true;
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const prevInsert = cache.insert;
     let inserted: string[] = [];
-    // @ts-expect-error – we override insert to track injected styles
     cache.insert = (...args: Parameters<typeof prevInsert>) => {
       const serialized = args[1];
       if (cache.inserted[serialized.name] === undefined) {
         inserted.push(serialized.name);
       }
-      // @ts-expect-error
-      return prevInsert.call(cache, ...args);
+      return prevInsert(...args);
     };
     const flush = () => {
       const prev = inserted;

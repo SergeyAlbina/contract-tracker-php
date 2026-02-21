@@ -9,7 +9,7 @@ import {
   UserRole,
 } from '@ct/shared';
 
-export type { ContractStatus, LawType, PaymentStatus, ProcurementStatus, ProposalStatus, RiskFlag, StageStatus, UserRole };
+export { ContractStatus, LawType, PaymentStatus, ProcurementStatus, ProposalStatus, RiskFlag, StageStatus, UserRole };
 
 export interface Paginated<T> {
   data: T[];

@@ -104,7 +104,7 @@ export default function ContractDetailPage() {
       ) : (
         <Paper sx={{ p: 3, mb: 3 }}>
           <Grid container spacing={4}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="subtitle2" gutterBottom>Основная информация</Typography>
               <Divider sx={{ mb: 1 }} />
               <InfoRow label="Номер">{contract.number}</InfoRow>
@@ -113,7 +113,7 @@ export default function ContractDetailPage() {
               <InfoRow label="Тип закона">{LAW_LABEL[contract.lawType]}</InfoRow>
               {contract.description && <InfoRow label="Описание">{contract.description}</InfoRow>}
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="subtitle2" gutterBottom>Финансы и даты</Typography>
               <Divider sx={{ mb: 1 }} />
               <InfoRow label="Сумма контракта">

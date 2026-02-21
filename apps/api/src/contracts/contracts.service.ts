@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Contract } from '@prisma/client';
+import { Contract } from '../generated/prisma/client';
 import { ContractStatus, LawType, RiskFlag } from '@ct/shared';
 import { ContractsRepository, ContractWithAggregates } from './contracts.repository';
 import { CreateContractDto } from './dto/create-contract.dto';

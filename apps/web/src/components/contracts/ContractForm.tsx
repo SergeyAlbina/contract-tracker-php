@@ -111,7 +111,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <Grid container spacing={2}>
           {/* Строка 1 */}
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextField
               {...register('number', { required: 'Обязательное поле' })}
               label="Номер контракта"
@@ -122,7 +122,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
               placeholder="КД-2024-001"
             />
           </Grid>
-          <Grid item xs={12} sm={8}>
+          <Grid size={{ xs: 12, sm: 8 }}>
             <TextField
               {...register('title', { required: 'Обязательное поле', minLength: { value: 3, message: 'Минимум 3 символа' } })}
               label="Название"
@@ -134,7 +134,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
           </Grid>
 
           {/* Строка 2 */}
-          <Grid item xs={12} sm={3}>
+          <Grid size={{ xs: 12, sm: 3 }}>
             <Controller
               name="lawType"
               control={control}
@@ -151,7 +151,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
             />
           </Grid>
           {initial && (
-            <Grid item xs={12} sm={3}>
+            <Grid size={{ xs: 12, sm: 3 }}>
               <Controller
                 name="status"
                 control={control}
@@ -170,7 +170,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
           )}
 
           {/* Поставщик */}
-          <Grid item xs={12} sm={6}>
+          <Grid size={{ xs: 12, sm: 6 }}>
             <TextField
               {...register('supplierName', { required: 'Обязательное поле', minLength: { value: 2, message: 'Минимум 2 символа' } })}
               label="Поставщик"
@@ -180,7 +180,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
               helperText={errors.supplierName?.message}
             />
           </Grid>
-          <Grid item xs={12} sm={3}>
+          <Grid size={{ xs: 12, sm: 3 }}>
             <TextField
               {...register('supplierInn')}
               label="ИНН поставщика"
@@ -190,7 +190,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
           </Grid>
 
           {/* Суммы */}
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <TextField
               {...register('totalAmount', {
                 required: 'Обязательное поле',
@@ -205,7 +205,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
             />
           </Grid>
           {lawType === 'LAW_44' && (
-            <Grid item xs={12} sm={4}>
+            <Grid size={{ xs: 12, sm: 4 }}>
               <TextField
                 {...register('nmckAmount', {
                   required: 'Обязательно для 44-ФЗ',
@@ -221,7 +221,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
           )}
 
           {/* Даты */}
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Controller
               name="signedAt"
               control={control}
@@ -235,7 +235,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
               )}
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Controller
               name="startDate"
               control={control}
@@ -249,7 +249,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
               )}
             />
           </Grid>
-          <Grid item xs={12} sm={4}>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Controller
               name="endDate"
               control={control}
@@ -265,7 +265,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
           </Grid>
 
           {/* Описание */}
-          <Grid item xs={12}>
+          <Grid size={12}>
             <TextField
               {...register('description')}
               label="Описание"
@@ -276,7 +276,7 @@ export default function ContractForm({ initial, onSubmit, submitLabel = 'Сох�
             />
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={12}>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <Button type="submit" variant="contained" disabled={isSubmitting}>
                 {isSubmitting ? 'Сохраняем…' : submitLabel}

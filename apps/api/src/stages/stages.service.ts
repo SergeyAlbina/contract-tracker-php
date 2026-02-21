@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Stage } from '@prisma/client';
+import { Stage } from '../generated/prisma/client';
 import { StageStatus } from '@ct/shared';
 import { StagesRepository } from './stages.repository';
 import { ContractsRepository } from '../contracts/contracts.repository';

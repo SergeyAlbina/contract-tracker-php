@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { Invoice, Payment } from '@prisma/client';
+import { Invoice, Payment } from '../generated/prisma/client';
 import { PaymentStatus } from '@ct/shared';
 import { PaymentsRepository } from './payments.repository';
 import { ContractsRepository } from '../contracts/contracts.repository';

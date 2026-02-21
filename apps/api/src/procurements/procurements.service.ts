@@ -1,5 +1,5 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
-import { Procurement } from '@prisma/client';
+import { Procurement } from '../generated/prisma/client';
 import { LawType, ProcurementStatus } from '@ct/shared';
 import { ProcurementsRepository } from './procurements.repository';
 import { CreateProcurementDto } from './dto/create-procurement.dto';

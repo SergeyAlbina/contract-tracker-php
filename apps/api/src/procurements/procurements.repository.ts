@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Procurement, ProcurementStatus, LawType, Prisma } from '@prisma/client';
+import { Procurement, ProcurementStatus, LawType, Prisma } from '../generated/prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface FindAllOptions {
