@@ -17,6 +17,7 @@ import Alert from '@mui/material/Alert';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Paper from '@mui/material/Paper';
 import AddIcon from '@mui/icons-material/Add';
 import PersonOffIcon from '@mui/icons-material/PersonOff';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
@@ -131,8 +132,8 @@ export default function UsersPage() {
   ];
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h5">Пользователи</Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
           Новый пользователь
@@ -141,13 +142,19 @@ export default function UsersPage() {
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
-      <DataGrid
-        rows={users}
-        columns={columns}
-        loading={isLoading}
-        sx={{ bgcolor: 'white', height: 500 }}
-        disableRowSelectionOnClick
-      />
+      <Paper sx={{ p: 0.5, borderRadius: 3 }}>
+        <DataGrid
+          rows={users}
+          columns={columns}
+          loading={isLoading}
+          sx={{
+            minHeight: 430,
+            height: { xs: 500, lg: 'calc(100vh - 240px)' },
+            maxHeight: 720,
+          }}
+          disableRowSelectionOnClick
+        />
+      </Paper>
 
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
         <DialogTitle>Новый пользователь</DialogTitle>

@@ -10,6 +10,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
 import AddIcon from '@mui/icons-material/Add';
 import { DataGrid, GridColDef, GridRenderCellParams, GridPaginationModel } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
@@ -110,41 +111,42 @@ export default function ContractsPage() {
   ];
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h5">Контракты</Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => router.push('/contracts/new')}>
           Новый контракт
         </Button>
       </Box>
 
-      {/* Фильтры */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-        <TextField
-          size="small"
-          placeholder="Поиск по номеру, названию, поставщику"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-          sx={{ width: 320 }}
-        />
-        <FormControl size="small" sx={{ minWidth: 160 }}>
-          <InputLabel>Статус</InputLabel>
-          <Select value={status} label="Статус" onChange={(e) => { setStatus(e.target.value); setPage(0); }}>
-            <MenuItem value="">Все</MenuItem>
-            {['DRAFT', 'ACTIVE', 'SUSPENDED', 'COMPLETED', 'TERMINATED', 'ARCHIVED'].map((s) => (
-              <MenuItem key={s} value={s}><StatusChip status={s as ContractStatus} /></MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-        <FormControl size="small" sx={{ minWidth: 120 }}>
-          <InputLabel>Закон</InputLabel>
-          <Select value={lawType} label="Закон" onChange={(e) => { setLawType(e.target.value); setPage(0); }}>
-            <MenuItem value="">Все</MenuItem>
-            <MenuItem value="LAW_223">223-ФЗ</MenuItem>
-            <MenuItem value="LAW_44">44-ФЗ</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
+      <Paper sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 3 }}>
+        <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+          <TextField
+            size="small"
+            placeholder="Поиск по номеру, названию, поставщику"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+            sx={{ width: { xs: '100%', sm: 320 } }}
+          />
+          <FormControl size="small" sx={{ minWidth: 170 }}>
+            <InputLabel>Статус</InputLabel>
+            <Select value={status} label="Статус" onChange={(e) => { setStatus(e.target.value); setPage(0); }}>
+              <MenuItem value="">Все</MenuItem>
+              {['DRAFT', 'ACTIVE', 'SUSPENDED', 'COMPLETED', 'TERMINATED', 'ARCHIVED'].map((s) => (
+                <MenuItem key={s} value={s}><StatusChip status={s as ContractStatus} /></MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+          <FormControl size="small" sx={{ minWidth: 130 }}>
+            <InputLabel>Закон</InputLabel>
+            <Select value={lawType} label="Закон" onChange={(e) => { setLawType(e.target.value); setPage(0); }}>
+              <MenuItem value="">Все</MenuItem>
+              <MenuItem value="LAW_223">223-ФЗ</MenuItem>
+              <MenuItem value="LAW_44">44-ФЗ</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+      </Paper>
 
       <DataGrid
         rows={rows}
@@ -156,7 +158,12 @@ export default function ContractsPage() {
         onPaginationModelChange={handlePagination}
         pageSizeOptions={[10, 20, 50]}
         onRowClick={(p) => router.push(`/contracts/${p.id}`)}
-        sx={{ bgcolor: 'white', cursor: 'pointer', height: 600 }}
+        sx={{
+          cursor: 'pointer',
+          minHeight: 480,
+          height: { xs: 520, lg: 'calc(100vh - 270px)' },
+          maxHeight: 720,
+        }}
         disableRowSelectionOnClick
       />
     </Box>

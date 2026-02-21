@@ -1,2 +1,2 @@
-export const SIDEBAR_WIDTH = 240;
-export const TOPBAR_HEIGHT = 48;
+export const SIDEBAR_WIDTH = 272;
+export const TOPBAR_HEIGHT = 68;

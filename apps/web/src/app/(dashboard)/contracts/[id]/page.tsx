@@ -72,13 +72,13 @@ export default function ContractDetailPage() {
   if (!contract) return <Alert severity="error">Контракт не найден</Alert>;
 
   return (
-    <Box>
-      <Breadcrumbs sx={{ mb: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Breadcrumbs>
         <Link href="/contracts" underline="hover" color="inherit">Контракты</Link>
         <Typography color="text.primary">{contract.number}</Typography>
       </Breadcrumbs>
 
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3, flexWrap: 'wrap' }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, flexWrap: 'wrap' }}>
         <Box sx={{ flexGrow: 1 }}>
           <Typography variant="h5">{contract.title}</Typography>
           <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -97,12 +97,12 @@ export default function ContractDetailPage() {
       </Box>
 
       {editing ? (
-        <Paper sx={{ p: 3, mb: 3 }}>
+        <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
           {saveError && <Alert severity="error" sx={{ mb: 2 }}>{saveError}</Alert>}
           <ContractForm initial={contract} onSubmit={handleEdit} submitLabel="Сохранить изменения" />
         </Paper>
       ) : (
-        <Paper sx={{ p: 3, mb: 3 }}>
+        <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
           <Grid container spacing={4}>
             <Grid size={{ xs: 12, md: 6 }}>
               <Typography variant="subtitle2" gutterBottom>Основная информация</Typography>
@@ -137,7 +137,7 @@ export default function ContractDetailPage() {
         </Paper>
       )}
 
-      <Box sx={{ bgcolor: 'white', borderRadius: 1, border: '1px solid #e0e0e0' }}>
+      <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider' }}>
         <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ px: 2 }}>
           <Tab label="Этапы" />
           <Tab label="Счета и оплаты" />

@@ -123,13 +123,13 @@ export default function ProcurementDetailPage() {
   if (!procurement) return <Alert severity="error">Закупка не найдена</Alert>;
 
   return (
-    <Box>
-      <Breadcrumbs sx={{ mb: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Breadcrumbs>
         <Link href="/procurements" underline="hover" color="inherit">Закупки</Link>
         <Typography color="text.primary">{procurement.number}</Typography>
       </Breadcrumbs>
 
-      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 3 }}>
+      <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
         <Box sx={{ flexGrow: 1 }}>
           <Typography variant="h5">{procurement.title}</Typography>
           <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center' }}>
@@ -139,7 +139,7 @@ export default function ProcurementDetailPage() {
         </Box>
       </Box>
 
-      <Paper sx={{ p: 3, mb: 3 }}>
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
         <Grid container spacing={4}>
           <Grid size={{ xs: 12, md: 6 }}>
             <Typography variant="subtitle2" gutterBottom>Информация</Typography>
@@ -181,7 +181,7 @@ export default function ProcurementDetailPage() {
       </Paper>
 
       {/* Proposals */}
-      <Box sx={{ bgcolor: 'white', borderRadius: 1, border: '1px solid #e0e0e0', p: 2 }}>
+      <Box sx={{ bgcolor: 'background.paper', borderRadius: 3, border: '1px solid', borderColor: 'divider', p: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
           <Typography variant="subtitle1" fontWeight={600}>Коммерческие предложения</Typography>
           <Button size="small" startIcon={<AddIcon />} onClick={() => setPropOpen(true)}>Добавить КП</Button>

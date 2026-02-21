@@ -26,14 +26,14 @@ export default function NewContractPage() {
   };
 
   return (
-    <Box>
-      <Breadcrumbs sx={{ mb: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Breadcrumbs>
         <Link href="/contracts" underline="hover" color="inherit">Контракты</Link>
         <Typography color="text.primary">Новый контракт</Typography>
       </Breadcrumbs>
-      <Typography variant="h5" sx={{ mb: 3 }}>Новый контракт</Typography>
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-      <Paper sx={{ p: 3 }}>
+      <Typography variant="h5">Новый контракт</Typography>
+      {error && <Alert severity="error">{error}</Alert>}
+      <Paper sx={{ p: { xs: 2, md: 3 }, borderRadius: 3 }}>
         <ContractForm onSubmit={handleSubmit} submitLabel="Создать контракт" />
       </Paper>
     </Box>

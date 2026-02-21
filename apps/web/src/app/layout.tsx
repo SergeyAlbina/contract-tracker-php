@@ -1,5 +1,12 @@
 import type { Metadata } from 'next';
+import { Manrope } from 'next/font/google';
 import ThemeRegistry from '@/components/providers/ThemeRegistry';
+
+const manrope = Manrope({
+  subsets: ['latin', 'cyrillic'],
+  variable: '--font-manrope',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'Трекер контрактов',
@@ -9,7 +16,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru">
-      <body>
+      <body className={manrope.variable}>
         <ThemeRegistry>{children}</ThemeRegistry>
       </body>
     </html>

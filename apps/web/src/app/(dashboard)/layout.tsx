@@ -33,23 +33,42 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <AuthProvider>
       <Guard>
-        <Box sx={{ display: 'flex' }}>
+        <Box
+          sx={{
+            minHeight: '100vh',
+            bgcolor: 'background.default',
+            backgroundImage:
+              'radial-gradient(circle at 20% -10%, rgba(16, 76, 129, 0.14), transparent 35%), radial-gradient(circle at 90% 10%, rgba(0, 137, 123, 0.12), transparent 30%)',
+          }}
+        >
           <TopBar onMenuClick={() => setMobileOpen(true)} />
           <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
           <Box
             component="main"
             sx={{
-              flexGrow: 1,
-              width: { xs: '100%', md: `calc(100% - ${SIDEBAR_WIDTH}px)` },
-              px: { xs: 1.5, sm: 2, md: 3 },
-              py: { xs: 2, md: 3 },
-              pt: `calc(${TOPBAR_HEIGHT}px + 16px)`,
-              bgcolor: 'background.default',
+              ml: { md: `${SIDEBAR_WIDTH}px` },
+              px: { xs: 1.25, sm: 2, md: 3 },
+              pb: { xs: 2, md: 3 },
+              pt: {
+                xs: `calc(${TOPBAR_HEIGHT}px + 12px)`,
+                md: `calc(${TOPBAR_HEIGHT}px + 24px)`,
+              },
               minHeight: '100vh',
-              overflowX: 'auto',
+              overflowX: 'clip',
             }}
           >
-            {children}
+            <Box
+              className="page-shell"
+              sx={{
+                maxWidth: 1600,
+                mx: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 2,
+              }}
+            >
+              {children}
+            </Box>
           </Box>
         </Box>
       </Guard>

@@ -15,6 +15,7 @@ import MenuItem from '@mui/material/MenuItem';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Alert from '@mui/material/Alert';
+import Paper from '@mui/material/Paper';
 import AddIcon from '@mui/icons-material/Add';
 import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
@@ -103,21 +104,23 @@ export default function ProcurementsPage() {
   ];
 
   return (
-    <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, flexWrap: 'wrap' }}>
         <Typography variant="h5">Закупки</Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={() => setOpen(true)}>
           Новая закупка
         </Button>
       </Box>
 
-      <TextField
-        size="small"
-        placeholder="Поиск по номеру или названию"
-        value={search}
-        onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-        sx={{ mb: 2, width: 320 }}
-      />
+      <Paper sx={{ p: { xs: 1.5, sm: 2 }, borderRadius: 3 }}>
+        <TextField
+          size="small"
+          placeholder="Поиск по номеру или названию"
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+          sx={{ width: { xs: '100%', sm: 320 } }}
+        />
+      </Paper>
 
       <DataGrid
         rows={rows}
@@ -129,7 +132,12 @@ export default function ProcurementsPage() {
         onPaginationModelChange={(m) => setPage(m.page)}
         pageSizeOptions={[20]}
         onRowClick={(p) => router.push(`/procurements/${p.id}`)}
-        sx={{ bgcolor: 'white', cursor: 'pointer', height: 550 }}
+        sx={{
+          cursor: 'pointer',
+          minHeight: 440,
+          height: { xs: 500, lg: 'calc(100vh - 255px)' },
+          maxHeight: 720,
+        }}
         disableRowSelectionOnClick
       />
 
