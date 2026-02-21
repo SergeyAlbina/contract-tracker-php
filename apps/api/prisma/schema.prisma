@@ -1,0 +1,292 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum UserRole {
+  ADMIN
+  HEAD_CS
+  SPECIALIST_CS
+}
+
+enum LawType {
+  LAW_223
+  LAW_44
+}
+
+enum ProcurementStatus {
+  DRAFT
+  PUBLISHED
+  EVALUATION
+  AWARDED
+  CANCELED
+}
+
+enum ProposalStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+enum ContractStatus {
+  DRAFT
+  ACTIVE
+  SUSPENDED
+  COMPLETED
+  TERMINATED
+  ARCHIVED
+}
+
+enum StageStatus {
+  PLANNED
+  IN_PROGRESS
+  COMPLETED
+  OVERDUE
+}
+
+enum PaymentStatus {
+  PLANNED
+  IN_PROGRESS
+  PAID
+  CANCELED
+}
+
+enum DocumentAccess {
+  PRIVATE
+  INTERNAL
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  fullName     String
+  role         UserRole @default(SPECIALIST_CS)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  procurements Procurement[]
+  contracts    Contract[]    @relation("ContractOwner")
+  auditLogs    AuditLog[]
+  refreshTokens RefreshToken[]
+  documents    Document[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.Text
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ─── PROCUREMENT (Закупки) ────────────────────────────────────────────────────
+
+model Procurement {
+  id          String            @id @default(uuid())
+  number      String            @unique
+  title       String
+  lawType     LawType
+  status      ProcurementStatus @default(DRAFT)
+  description String?           @db.Text
+  plannedDate DateTime?
+  ownerId     String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  owner     User       @relation(fields: [ownerId], references: [id])
+  proposals Proposal[]
+  contract  Contract?
+
+  @@index([ownerId])
+  @@index([status])
+  @@map("procurements")
+}
+
+// ─── PROPOSAL (Коммерческие предложения) ─────────────────────────────────────
+
+model Proposal {
+  id             String         @id @default(uuid())
+  procurementId  String
+  supplierName   String
+  offeredAmount  Decimal        @db.Decimal(15, 2)
+  status         ProposalStatus @default(PENDING)
+  notes          String?        @db.Text
+  rejectionReason String?       @db.Text
+  submittedAt    DateTime?
+  decidedAt      DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  procurement Procurement @relation(fields: [procurementId], references: [id], onDelete: Cascade)
+
+  @@index([procurementId])
+  @@index([status])
+  @@map("proposals")
+}
+
+// ─── CONTRACT (Контракты) ─────────────────────────────────────────────────────
+
+model Contract {
+  id             String         @id @default(uuid())
+  number         String         @unique
+  title          String
+  lawType        LawType
+  status         ContractStatus @default(DRAFT)
+  supplierName   String
+  supplierInn    String?
+  totalAmount    Decimal        @db.Decimal(15, 2)
+  nmckAmount     Decimal?       @db.Decimal(15, 2) // обязательно для 44-ФЗ
+  signedAt       DateTime?
+  startDate      DateTime?
+  endDate        DateTime?
+  description    String?        @db.Text
+  ownerId        String
+  procurementId  String?        @unique
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  owner       User         @relation("ContractOwner", fields: [ownerId], references: [id])
+  procurement Procurement? @relation(fields: [procurementId], references: [id])
+  stages      Stage[]
+  invoices    Invoice[]
+  payments    Payment[]
+  documents   Document[]
+  auditLogs   AuditLog[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([lawType])
+  @@index([endDate])
+  @@map("contracts")
+}
+
+// ─── STAGE (Этапы) ────────────────────────────────────────────────────────────
+
+model Stage {
+  id          String      @id @default(uuid())
+  contractId  String
+  title       String
+  status      StageStatus @default(PLANNED)
+  plannedStart DateTime
+  plannedEnd   DateTime
+  actualStart  DateTime?
+  actualEnd    DateTime?
+  amount      Decimal?    @db.Decimal(15, 2)
+  description String?     @db.Text
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  invoices Invoice[]
+
+  @@index([contractId])
+  @@index([status])
+  @@map("stages")
+}
+
+// ─── INVOICE (Счета/Акты) ─────────────────────────────────────────────────────
+
+model Invoice {
+  id         String    @id @default(uuid())
+  contractId String
+  stageId    String?
+  number     String
+  amount     Decimal   @db.Decimal(15, 2)
+  issuedAt   DateTime
+  dueAt      DateTime?
+  paidAt     DateTime?
+  notes      String?   @db.Text
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  contract Contract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  stage    Stage?    @relation(fields: [stageId], references: [id])
+  payments Payment[]
+
+  @@index([contractId])
+  @@map("invoices")
+}
+
+// ─── PAYMENT (Оплаты) ─────────────────────────────────────────────────────────
+
+model Payment {
+  id         String        @id @default(uuid())
+  contractId String
+  invoiceId  String?
+  amount     Decimal       @db.Decimal(15, 2)
+  status     PaymentStatus @default(PLANNED)
+  plannedAt  DateTime?
+  paidAt     DateTime?
+  reference  String?       // платёжное поручение
+  notes      String?       @db.Text
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  invoice  Invoice? @relation(fields: [invoiceId], references: [id])
+
+  @@index([contractId])
+  @@index([status])
+  @@map("payments")
+}
+
+// ─── DOCUMENT (Документы) ─────────────────────────────────────────────────────
+
+model Document {
+  id           String         @id @default(uuid())
+  contractId   String
+  originalName String
+  mime         String
+  size         Int
+  sha256       String
+  relativePath String
+  access       DocumentAccess @default(INTERNAL)
+  uploadedById String?
+  uploadedBy   User?          @relation(fields: [uploadedById], references: [id])
+  externalUrl  String?        // ссылка на Диадок/1С
+  notes        String?        @db.Text
+  createdAt    DateTime       @default(now())
+
+  contract Contract @relation(fields: [contractId], references: [id], onDelete: Cascade)
+
+  @@index([contractId])
+  @@map("documents")
+}
+
+// ─── AUDIT LOG ────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  contractId String?
+  entity     String   // "Contract", "Payment", etc.
+  entityId   String
+  action     String   // "CREATE", "UPDATE", "DELETE"
+  diff       Json?    // { before, after }
+  createdAt  DateTime @default(now())
+
+  user     User?     @relation(fields: [userId], references: [id])
+  contract Contract? @relation(fields: [contractId], references: [id])
+
+  @@index([entity, entityId])
+  @@index([contractId])
+  @@index([userId])
+  @@map("audit_logs")
+}
