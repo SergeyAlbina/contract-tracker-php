@@ -36,6 +36,8 @@ const theme = createTheme(
       h5: { fontWeight: 750, letterSpacing: '-0.015em' },
       h6: { fontWeight: 700, letterSpacing: '-0.01em' },
       subtitle1: { fontWeight: 700 },
+      body1: { fontSize: '0.97rem', lineHeight: 1.45 },
+      body2: { fontSize: '0.92rem', lineHeight: 1.45 },
       button: { fontWeight: 700, letterSpacing: '0.01em' },
     },
     components: {
@@ -52,6 +54,8 @@ const theme = createTheme(
             margin: 0,
             backgroundColor: '#eef3f8',
             backgroundAttachment: 'fixed',
+            fontFeatureSettings: '"cv03", "cv04", "cv11"',
+            textRendering: 'optimizeLegibility',
           },
           '#__next': {
             minHeight: '100vh',
@@ -124,22 +128,48 @@ const theme = createTheme(
         styleOverrides: {
           root: {
             border: 0,
-            borderRadius: 16,
+            borderRadius: 18,
             overflow: 'hidden',
-            boxShadow: '0 14px 28px rgba(15, 23, 42, 0.09)',
+            boxShadow: '0 16px 30px rgba(15, 23, 42, 0.1)',
             backgroundColor: '#ffffff',
+            fontFamily: 'var(--font-manrope), "Segoe UI", "Tahoma", sans-serif',
+            fontSize: '0.93rem',
+            '& .MuiDataGrid-main': {
+              borderRadius: 'inherit',
+            },
             '& .MuiDataGrid-columnHeaders': {
-              backgroundColor: alpha('#0f4c81', 0.07),
+              backgroundColor: alpha('#0f4c81', 0.08),
               borderBottom: `1px solid ${alpha('#0f172a', 0.12)}`,
             },
-            '& .MuiDataGrid-cell': {
-              borderColor: alpha('#0f172a', 0.08),
+            '& .MuiDataGrid-columnHeader': {
+              minHeight: '54px !important',
+              maxHeight: '54px !important',
+            },
+            '& .MuiDataGrid-columnHeaderTitle': {
+              fontWeight: 750,
+              letterSpacing: '-0.01em',
             },
             '& .MuiDataGrid-row': {
+              maxHeight: '52px !important',
+              minHeight: '52px !important',
               transition: 'background-color 160ms ease',
+            },
+            '& .MuiDataGrid-cell': {
+              maxHeight: '52px !important',
+              minHeight: '52px !important',
+              alignItems: 'center',
+              borderColor: alpha('#0f172a', 0.08),
+              fontWeight: 560,
             },
             '& .MuiDataGrid-row:hover': {
               backgroundColor: alpha('#0f4c81', 0.06),
+            },
+            '& .MuiDataGrid-columnSeparator': {
+              color: alpha('#0f172a', 0.14),
+            },
+            '& .MuiDataGrid-footerContainer': {
+              borderTop: `1px solid ${alpha('#0f172a', 0.08)}`,
+              minHeight: 50,
             },
           },
         },

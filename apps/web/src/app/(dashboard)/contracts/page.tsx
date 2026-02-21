@@ -54,12 +54,37 @@ export default function ContractsPage() {
   }, []);
 
   const columns: GridColDef<ContractResponse>[] = [
-    { field: 'number', headerName: 'Номер', width: 130 },
-    { field: 'title', headerName: 'Название', flex: 1, minWidth: 200 },
+    {
+      field: 'number',
+      headerName: 'Номер',
+      width: 190,
+      renderCell: (p) => (
+        <Typography
+          variant="body2"
+          fontWeight={650}
+          noWrap
+          title={String(p.value ?? '')}
+          sx={{ width: '100%' }}
+        >
+          {p.value as string}
+        </Typography>
+      ),
+    },
+    {
+      field: 'title',
+      headerName: 'Название',
+      flex: 1,
+      minWidth: 320,
+      renderCell: (p) => (
+        <Typography variant="body2" noWrap title={String(p.value ?? '')} sx={{ width: '100%' }}>
+          {p.value as string}
+        </Typography>
+      ),
+    },
     {
       field: 'lawType',
       headerName: 'Закон',
-      width: 90,
+      width: 110,
       renderCell: (p: GridRenderCellParams<ContractResponse, LawType>) =>
         LAW_LABEL[p.value ?? ''] ?? 'Неизвестный закон',
     },
@@ -70,7 +95,16 @@ export default function ContractsPage() {
       renderCell: (p: GridRenderCellParams<ContractResponse, ContractStatus>) =>
         p.value ? <StatusChip status={p.value} /> : null,
     },
-    { field: 'supplierName', headerName: 'Поставщик', width: 180 },
+    {
+      field: 'supplierName',
+      headerName: 'Поставщик',
+      width: 230,
+      renderCell: (p) => (
+        <Typography variant="body2" noWrap title={String(p.value ?? '')} sx={{ width: '100%' }}>
+          {p.value as string}
+        </Typography>
+      ),
+    },
     {
       field: 'totalAmount',
       headerName: 'Сумма',
@@ -103,7 +137,7 @@ export default function ContractsPage() {
     {
       field: 'riskFlags',
       headerName: 'Риски',
-      width: 220,
+      width: 190,
       sortable: false,
       renderCell: (p: GridRenderCellParams<ContractResponse, RiskFlag[]>) =>
         <RiskChips flags={p.value ?? []} />,
@@ -148,24 +182,26 @@ export default function ContractsPage() {
         </Box>
       </Paper>
 
-      <DataGrid
-        rows={rows}
-        columns={columns}
-        loading={isLoading}
-        rowCount={total}
-        paginationMode="server"
-        paginationModel={{ page, pageSize }}
-        onPaginationModelChange={handlePagination}
-        pageSizeOptions={[10, 20, 50]}
-        onRowClick={(p) => router.push(`/contracts/${p.id}`)}
-        sx={{
-          cursor: 'pointer',
-          minHeight: 480,
-          height: { xs: 520, lg: 'calc(100vh - 270px)' },
-          maxHeight: 720,
-        }}
-        disableRowSelectionOnClick
-      />
+      <Paper sx={{ p: 0.5, borderRadius: 3 }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          loading={isLoading}
+          rowCount={total}
+          paginationMode="server"
+          paginationModel={{ page, pageSize }}
+          onPaginationModelChange={handlePagination}
+          pageSizeOptions={[10, 20, 50]}
+          onRowClick={(p) => router.push(`/contracts/${p.id}`)}
+          sx={{
+            cursor: 'pointer',
+            minHeight: 480,
+            height: { xs: 520, lg: 'calc(100vh - 285px)' },
+            maxHeight: 760,
+          }}
+          disableRowSelectionOnClick
+        />
+      </Paper>
     </Box>
   );
 }
