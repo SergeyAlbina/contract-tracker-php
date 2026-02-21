@@ -23,6 +23,7 @@ import { DataGrid, GridColDef, GridRenderCellParams } from '@mui/x-data-grid';
 import { useForm, Controller } from 'react-hook-form';
 import { usersApi } from '@/lib/api';
 import { useAuth } from '@/components/providers/AuthProvider';
+import { getUiErrorMessage } from '@/lib/error-message';
 import type { UserResponse, UserRole } from '@/types/api';
 import dayjs from 'dayjs';
 
@@ -67,8 +68,7 @@ export default function UsersPage() {
       reset();
       setOpen(false);
     } catch (e: unknown) {
-      const msg = (e as { response?: { data?: { message?: unknown } } })?.response?.data?.message;
-      setError(Array.isArray(msg) ? msg.join(', ') : String(msg ?? 'Ошибка создания'));
+      setError(getUiErrorMessage(e, 'Ошибка создания'));
     }
   };
 
@@ -88,13 +88,13 @@ export default function UsersPage() {
 
   const columns: GridColDef<UserResponse>[] = [
     { field: 'fullName', headerName: 'Имя', flex: 1, minWidth: 180 },
-    { field: 'email', headerName: 'Email', flex: 1, minWidth: 200 },
+    { field: 'email', headerName: 'Эл. почта', flex: 1, minWidth: 200 },
     {
       field: 'role',
       headerName: 'Роль',
       width: 180,
       renderCell: (p: GridRenderCellParams<UserResponse, UserRole>) =>
-        <Chip label={ROLE_LABEL[p.value ?? ''] ?? p.value} size="small" />,
+        <Chip label={ROLE_LABEL[p.value ?? ''] ?? 'Неизвестная роль'} size="small" />,
     },
     {
       field: 'isActive',
@@ -165,7 +165,7 @@ export default function UsersPage() {
             />
             <TextField
               {...register('email', { required: 'Обязательное поле' })}
-              label="Email"
+              label="Эл. почта"
               type="email"
               size="small"
               fullWidth

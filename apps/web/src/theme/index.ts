@@ -1,5 +1,7 @@
 import { createTheme } from '@mui/material/styles';
-import { ruRU } from '@mui/material/locale';
+import { ruRU as materialRuRU } from '@mui/material/locale';
+import { ruRU as dataGridRuRU } from '@mui/x-data-grid/locales';
+import { ruRU as datePickersRuRU } from '@mui/x-date-pickers/locales';
 
 const theme = createTheme(
   {
@@ -27,7 +29,9 @@ const theme = createTheme(
       },
     },
   },
-  ruRU,
+  materialRuRU,
+  dataGridRuRU,
+  datePickersRuRU,
 );
 
 export default theme;

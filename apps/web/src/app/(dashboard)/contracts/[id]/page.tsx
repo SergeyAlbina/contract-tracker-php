@@ -22,6 +22,7 @@ import RiskChips from '@/components/common/RiskChip';
 import ContractForm from '@/components/contracts/ContractForm';
 import StagesPanel from '@/components/contracts/StagesPanel';
 import PaymentsPanel from '@/components/contracts/PaymentsPanel';
+import { getUiErrorMessage } from '@/lib/error-message';
 import type { ContractResponse } from '@/types/api';
 import dayjs from 'dayjs';
 
@@ -63,8 +64,7 @@ export default function ContractDetailPage() {
       await mutate(contractKey);
       setEditing(false);
     } catch (e: unknown) {
-      const msg = (e as { response?: { data?: { message?: unknown } } })?.response?.data?.message;
-      setSaveError(Array.isArray(msg) ? msg.join(', ') : String(msg ?? 'Ошибка сохранения'));
+      setSaveError(getUiErrorMessage(e, 'Ошибка сохранения'));
     }
   };
 
@@ -83,7 +83,7 @@ export default function ContractDetailPage() {
           <Typography variant="h5">{contract.title}</Typography>
           <Box sx={{ display: 'flex', gap: 1, mt: 1, flexWrap: 'wrap', alignItems: 'center' }}>
             <StatusChip status={contract.status} />
-            <Chip label={LAW_LABEL[contract.lawType]} size="small" variant="outlined" />
+            <Chip label={LAW_LABEL[contract.lawType] ?? 'Неизвестный закон'} size="small" variant="outlined" />
             <RiskChips flags={contract.riskFlags} />
           </Box>
         </Box>

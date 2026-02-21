@@ -9,6 +9,7 @@ import Alert from '@mui/material/Alert';
 import { useState } from 'react';
 import ContractForm from '@/components/contracts/ContractForm';
 import { contractsApi } from '@/lib/api';
+import { getUiErrorMessage } from '@/lib/error-message';
 
 export default function NewContractPage() {
   const router = useRouter();
@@ -20,8 +21,7 @@ export default function NewContractPage() {
       const { data: created } = await contractsApi.create(data);
       router.push(`/contracts/${created.id}`);
     } catch (e: unknown) {
-      const msg = (e as { response?: { data?: { message?: unknown } } })?.response?.data?.message;
-      setError(Array.isArray(msg) ? msg.join(', ') : String(msg ?? 'Ошибка создания контракта'));
+      setError(getUiErrorMessage(e, 'Ошибка создания контракта'));
     }
   };
 

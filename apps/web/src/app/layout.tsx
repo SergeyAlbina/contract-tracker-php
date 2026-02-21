@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import ThemeRegistry from '@/components/providers/ThemeRegistry';
 
 export const metadata: Metadata = {
-  title: 'Contract Tracker',
+  title: 'Трекер контрактов',
   description: 'Система контроля жизненного цикла контрактов (223-ФЗ / 44-ФЗ)',
 };
 

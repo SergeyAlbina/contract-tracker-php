@@ -21,6 +21,7 @@ import dayjs from 'dayjs';
 import { useForm, Controller } from 'react-hook-form';
 import { procurementsApi } from '@/lib/api';
 import StatusChip from '@/components/common/StatusChip';
+import { getUiErrorMessage } from '@/lib/error-message';
 import type { ProcurementResponse, ProcurementStatus } from '@/types/api';
 
 const LAW_LABEL: Record<string, string> = { LAW_223: '223-ФЗ', LAW_44: '44-ФЗ' };
@@ -67,8 +68,7 @@ export default function ProcurementsPage() {
       setOpen(false);
       router.push(`/procurements/${created.id}`);
     } catch (e: unknown) {
-      const msg = (e as { response?: { data?: { message?: unknown } } })?.response?.data?.message;
-      setError(Array.isArray(msg) ? msg.join(', ') : String(msg ?? 'Ошибка создания'));
+      setError(getUiErrorMessage(e, 'Ошибка создания'));
     }
   };
 
@@ -79,7 +79,7 @@ export default function ProcurementsPage() {
       field: 'lawType',
       headerName: 'Закон',
       width: 90,
-      renderCell: (p) => LAW_LABEL[p.value as string] ?? p.value,
+      renderCell: (p) => LAW_LABEL[p.value as string] ?? 'Неизвестный закон',
     },
     {
       field: 'status',

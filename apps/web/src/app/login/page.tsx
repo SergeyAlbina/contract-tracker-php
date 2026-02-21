@@ -12,6 +12,7 @@ import Alert from '@mui/material/Alert';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import { authApi } from '@/lib/api';
 import { authStorage } from '@/lib/auth';
+import { getUiErrorMessage } from '@/lib/error-message';
 import type { TokenResponse } from '@/types/api';
 
 interface FormData {
@@ -31,8 +32,7 @@ export default function LoginPage() {
       authStorage.set(data.accessToken, data.refreshToken);
       router.replace('/contracts');
     } catch (e: unknown) {
-      const msg = (e as { response?: { data?: { message?: string } } })?.response?.data?.message;
-      setError(Array.isArray(msg) ? msg.join(', ') : (msg ?? 'Неверный логин или пароль'));
+      setError(getUiErrorMessage(e, 'Неверный логин или пароль'));
     }
   };
 
@@ -50,7 +50,7 @@ export default function LoginPage() {
         <CardContent sx={{ p: 4 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
             <DashboardIcon color="primary" fontSize="large" />
-            <Typography variant="h5" color="primary">Contract Tracker</Typography>
+            <Typography variant="h5" color="primary">Трекер контрактов</Typography>
           </Box>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
             Войдите в систему управления контрактами
@@ -61,7 +61,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit(onSubmit)}>
             <TextField
               {...register('email', { required: true })}
-              label="Email"
+              label="Эл. почта"
               type="email"
               fullWidth
               size="small"

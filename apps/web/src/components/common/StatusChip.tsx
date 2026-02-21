@@ -68,7 +68,7 @@ interface Props {
 export default function StatusChip({ status, size = 'small' }: Props) {
   return (
     <Chip
-      label={LABEL[status] ?? status}
+      label={LABEL[status] ?? 'Неизвестный статус'}
       color={COLOR[status] ?? 'default'}
       size={size}
     />

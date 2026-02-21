@@ -33,6 +33,7 @@ import InputLabel from '@mui/material/InputLabel';
 import { useForm, Controller } from 'react-hook-form';
 import { procurementsApi } from '@/lib/api';
 import StatusChip from '@/components/common/StatusChip';
+import { getUiErrorMessage } from '@/lib/error-message';
 import type { ProcurementResponse, ProposalResponse } from '@/types/api';
 import dayjs from 'dayjs';
 
@@ -114,8 +115,7 @@ export default function ProcurementDetailPage() {
       decideForm.reset();
       setDecideId(null);
     } catch (e: unknown) {
-      const msg = (e as { response?: { data?: { message?: unknown } } })?.response?.data?.message;
-      setError(Array.isArray(msg) ? msg.join(', ') : String(msg ?? 'Ошибка'));
+      setError(getUiErrorMessage(e, 'Ошибка'));
     }
   };
 
@@ -134,7 +134,7 @@ export default function ProcurementDetailPage() {
           <Typography variant="h5">{procurement.title}</Typography>
           <Box sx={{ display: 'flex', gap: 1, mt: 1, alignItems: 'center' }}>
             <StatusChip status={procurement.status} />
-            <Chip label={LAW_LABEL[procurement.lawType]} size="small" variant="outlined" />
+            <Chip label={LAW_LABEL[procurement.lawType] ?? 'Неизвестный закон'} size="small" variant="outlined" />
           </Box>
         </Box>
       </Box>
@@ -150,7 +150,7 @@ export default function ProcurementDetailPage() {
             </Box>
             <Box sx={{ display: 'flex', py: 0.75 }}>
               <Typography variant="body2" color="text.secondary" sx={{ width: 160, flexShrink: 0 }}>Тип закона</Typography>
-              <Typography variant="body2">{LAW_LABEL[procurement.lawType]}</Typography>
+              <Typography variant="body2">{LAW_LABEL[procurement.lawType] ?? 'Неизвестный закон'}</Typography>
             </Box>
             <Box sx={{ display: 'flex', py: 0.75 }}>
               <Typography variant="body2" color="text.secondary" sx={{ width: 160, flexShrink: 0 }}>Статус</Typography>

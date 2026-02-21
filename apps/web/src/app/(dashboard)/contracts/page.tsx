@@ -60,7 +60,7 @@ export default function ContractsPage() {
       headerName: 'Закон',
       width: 90,
       renderCell: (p: GridRenderCellParams<ContractResponse, LawType>) =>
-        LAW_LABEL[p.value ?? ''] ?? p.value,
+        LAW_LABEL[p.value ?? ''] ?? 'Неизвестный закон',
     },
     {
       field: 'status',

@@ -14,33 +14,30 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/components/providers/AuthProvider';
 import { UserRole } from '@/types/api';
-
-const WIDTH = 240;
+import { SIDEBAR_WIDTH, TOPBAR_HEIGHT } from './constants';
 
 const NAV = [
   { label: 'Контракты', icon: <ArticleIcon />, href: '/contracts' },
   { label: 'Закупки', icon: <ShoppingCartIcon />, href: '/procurements' },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  mobileOpen: boolean;
+  onMobileClose: () => void;
+}
+
+export default function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
 
-  return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: WIDTH,
-        flexShrink: 0,
-        '& .MuiDrawer-paper': { width: WIDTH, boxSizing: 'border-box', borderRight: '1px solid #e0e0e0' },
-      }}
-    >
+  const content = (
+    <>
       <Box sx={{ px: 2, py: 2.5 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <DashboardIcon color="primary" />
           <Typography variant="h6" color="primary" sx={{ lineHeight: 1 }}>
-            Contract Tracker
+            Трекер контрактов
           </Typography>
         </Box>
       </Box>
@@ -50,7 +47,7 @@ export default function Sidebar() {
           <ListItemButton
             key={href}
             selected={pathname.startsWith(href)}
-            onClick={() => router.push(href)}
+            onClick={() => { router.push(href); onMobileClose(); }}
             sx={{ borderRadius: 1, mb: 0.5 }}
           >
             <ListItemIcon sx={{ minWidth: 36 }}>{icon}</ListItemIcon>
@@ -60,7 +57,7 @@ export default function Sidebar() {
         {user?.role === UserRole.ADMIN && (
           <ListItemButton
             selected={pathname.startsWith('/users')}
-            onClick={() => router.push('/users')}
+            onClick={() => { router.push('/users'); onMobileClose(); }}
             sx={{ borderRadius: 1, mb: 0.5 }}
           >
             <ListItemIcon sx={{ minWidth: 36 }}><PeopleIcon /></ListItemIcon>
@@ -68,6 +65,48 @@ export default function Sidebar() {
           </ListItemButton>
         )}
       </List>
-    </Drawer>
+    </>
+  );
+
+  return (
+    <>
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={onMobileClose}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': {
+            width: SIDEBAR_WIDTH,
+            boxSizing: 'border-box',
+            borderRight: '1px solid #e0e0e0',
+            top: `${TOPBAR_HEIGHT}px`,
+            height: `calc(100% - ${TOPBAR_HEIGHT}px)`,
+          },
+        }}
+      >
+        {content}
+      </Drawer>
+
+      <Drawer
+        variant="permanent"
+        open
+        sx={{
+          display: { xs: 'none', md: 'block' },
+          width: SIDEBAR_WIDTH,
+          flexShrink: 0,
+          '& .MuiDrawer-paper': {
+            width: SIDEBAR_WIDTH,
+            boxSizing: 'border-box',
+            borderRight: '1px solid #e0e0e0',
+            top: `${TOPBAR_HEIGHT}px`,
+            height: `calc(100% - ${TOPBAR_HEIGHT}px)`,
+          },
+        }}
+      >
+        {content}
+      </Drawer>
+    </>
   );
 }
