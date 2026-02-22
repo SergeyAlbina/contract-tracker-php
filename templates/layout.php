@@ -14,6 +14,7 @@
   $user = $app->currentUser();
   $flashes = $session->getFlashes();
   $failed = $app->failedModules();
+  $uriPath = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
 ?>
 <div class="shell">
 
@@ -24,15 +25,21 @@
     </a>
 
     <nav class="topbar__nav" role="navigation">
-      <a href="/contracts" class="<?= str_starts_with($_SERVER['REQUEST_URI'] ?? '', '/contracts') ? 'active' : '' ?>">
+      <a href="/contracts" class="<?= str_starts_with($uriPath, '/contracts') ? 'active' : '' ?>">
         📄 <span class="nav-text">Контракты</span>
       </a>
+      <?php if (($user['role'] ?? '') === 'admin'): ?>
+      <a href="/users" class="<?= str_starts_with($uriPath, '/users') ? 'active' : '' ?>">
+        👥 <span class="nav-text">Users</span>
+      </a>
+      <?php endif; ?>
     </nav>
 
     <?php if ($user): ?>
     <div class="topbar__user">
       <span class="user-name"><?= Html::e($user['full_name']) ?></span>
       <?= Html::badge($user['role'], $user['role']) ?>
+      <a href="/profile/password" class="btn btn--ghost btn--sm">🔐 Сменить пароль</a>
       <form method="post" action="/logout" style="display:inline">
         <?= $csrf->field() ?>
         <button type="submit" class="btn btn--ghost btn--sm">Выйти</button>
