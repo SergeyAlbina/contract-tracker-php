@@ -5,7 +5,7 @@
 | Role      | Description                    |
 |-----------|--------------------------------|
 | `admin`   | Full access, user management   |
-| `manager` | CRUD contracts, payments, docs |
+| `manager` | CRUD contracts, закупки, payments, docs |
 | `viewer`  | Read-only access               |
 
 ## Permissions Matrix
@@ -23,6 +23,14 @@
 | Upload document           |  ✅   |   ✅    |   ❌   |
 | Download document         |  ✅   |   ✅    |   ✅   |
 | Delete document           |  ✅   |   ❌    |   ❌   |
+| View procurements list    |  ✅   |   ✅    |   ✅   |
+| View procurement details  |  ✅   |   ✅    |   ✅   |
+| Create procurement        |  ✅   |   ✅    |   ❌   |
+| Edit procurement          |  ✅   |   ✅    |   ❌   |
+| Delete procurement        |  ✅   |   ❌    |   ❌   |
+| Add commercial proposal   |  ✅   |   ✅    |   ❌   |
+| Select winning proposal   |  ✅   |   ✅    |   ❌   |
+| Delete proposal           |  ✅   |   ✅    |   ❌   |
 | View audit log            |  ✅   |   ❌    |   ❌   |
 | Manage users              |  ✅   |   ❌    |   ❌   |
 | Export data               |  ✅   |   ✅    |   ✅   |

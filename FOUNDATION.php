@@ -196,7 +196,9 @@
  *   │       ├── Auth/              [✅ v1] Логин, логаут, rate limit
  *   │       ├── Contracts/         [✅ v1] CRUD, фильтры, финансы, Telegram
  *   │       ├── Documents/         [✅ v1] Upload/download/delete
- *   │       └── Payments/          [✅ v1] CRUD, статусы, привязка к контрактам
+ *   │       ├── Payments/          [✅ v1] CRUD, статусы, привязка к контрактам
+ *   │       ├── Users/             [✅ v1.1] CRUD пользователей + смена пароля
+ *   │       └── Procurements/      [✅ v2.0] Закупки + коммерческие предложения (КП)
  *   │
  *   ├── templates/
  *   │   ├── layout.php            ← HTML5 layout: topbar, flash, stagger-animation
@@ -400,12 +402,12 @@
  *     [✅] Отказоустойчивость: модули изолированы
  *
  *   v1.1
- *     [ ] Users: CRUD (admin), смена пароля
- *     [ ] Export: CSV реестр контрактов
- *     [ ] RBAC: проверки в каждом сервисе
+ *     [✅] Users: CRUD (admin), смена пароля
+ *     [✅] Export: CSV реестр контрактов
+ *     [✅] RBAC: проверки в каждом сервисе
  *
  *   v2.0
- *     [ ] Procurements: закупки с КП
+ *     [✅] Procurements: закупки с КП
  *     [ ] Stages: этапы контракта (plan/fact)
  *     [ ] Invoices + Acts: счета и акты
  *     [ ] Audit UI: просмотр лога (admin)

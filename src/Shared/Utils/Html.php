@@ -60,6 +60,8 @@ final class Html
             'terminated' => 'badge--rose', 'cancelled' => 'badge--rose',
             'planned' => 'badge--slate', 'in_progress' => 'badge--sky',
             'paid' => 'badge--emerald', 'canceled' => 'badge--rose',
+            'rfq' => 'badge--sky', 'evaluation' => 'badge--amber',
+            'awarded' => 'badge--emerald',
             'admin' => 'badge--amber', 'manager' => 'badge--sky', 'viewer' => 'badge--slate',
         ];
         $class = $map[$value] ?? 'badge--slate';

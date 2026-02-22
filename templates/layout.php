@@ -43,6 +43,9 @@
       <a href="/contracts" class="<?= str_starts_with($uriPath, '/contracts') ? 'active' : '' ?>">
         📄 <span class="nav-text">Контракты</span>
       </a>
+      <a href="/procurements" class="<?= str_starts_with($uriPath, '/procurements') ? 'active' : '' ?>">
+        🛒 <span class="nav-text">Закупки</span>
+      </a>
       <?php if (($user['role'] ?? '') === 'admin'): ?>
       <a href="/users" class="<?= str_starts_with($uriPath, '/users') ? 'active' : '' ?>">
         👥 <span class="nav-text">Users</span>

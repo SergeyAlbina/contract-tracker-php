@@ -51,6 +51,51 @@ CREATE TABLE IF NOT EXISTS `contracts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
+-- ═══ PROCUREMENTS (Закупки) ═══════════════════════════
+CREATE TABLE IF NOT EXISTS `procurements` (
+  `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `number`        VARCHAR(100) NOT NULL,
+  `subject`       TEXT         NOT NULL,
+  `law_type`      ENUM('223','44') NOT NULL,
+  `status`        ENUM('draft','rfq','evaluation','awarded','cancelled') NOT NULL DEFAULT 'draft',
+  `nmck_amount`   DECIMAL(15,2) NOT NULL DEFAULT 0.00,
+  `deadline_at`   DATE         DEFAULT NULL,
+  `notes`         TEXT         DEFAULT NULL,
+  `created_by`    INT UNSIGNED DEFAULT NULL,
+  `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_pr_law` (`law_type`),
+  KEY `idx_pr_status` (`status`),
+  KEY `idx_pr_deadline` (`deadline_at`),
+  KEY `idx_pr_created_by` (`created_by`),
+  CONSTRAINT `fk_procurement_user` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ═══ PROCUREMENT PROPOSALS (КП) ═══════════════════════
+CREATE TABLE IF NOT EXISTS `procurement_proposals` (
+  `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `procurement_id` INT UNSIGNED NOT NULL,
+  `supplier_name`  VARCHAR(255) NOT NULL,
+  `supplier_inn`   VARCHAR(12)  DEFAULT NULL,
+  `amount`         DECIMAL(15,2) NOT NULL,
+  `currency`       VARCHAR(3)   NOT NULL DEFAULT 'RUB',
+  `submitted_at`   DATE         DEFAULT NULL,
+  `comment`        TEXT         DEFAULT NULL,
+  `is_winner`      TINYINT(1)   NOT NULL DEFAULT 0,
+  `created_by`     INT UNSIGNED DEFAULT NULL,
+  `created_at`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`     DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_pp_procurement` (`procurement_id`),
+  KEY `idx_pp_amount` (`amount`),
+  KEY `idx_pp_winner` (`is_winner`),
+  CONSTRAINT `fk_pp_procurement` FOREIGN KEY (`procurement_id`) REFERENCES `procurements`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_pp_user` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- ═══ DOCUMENTS ═════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS `documents` (
   `id`             INT UNSIGNED NOT NULL AUTO_INCREMENT,
