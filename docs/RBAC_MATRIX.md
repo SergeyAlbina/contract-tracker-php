@@ -20,6 +20,9 @@
 | Add payment               |  ✅   |   ✅    |   ❌   |
 | Edit payment              |  ✅   |   ✅    |   ❌   |
 | Delete payment            |  ✅   |   ❌    |   ❌   |
+| Add contract stage        |  ✅   |   ✅    |   ❌   |
+| Edit contract stage       |  ✅   |   ✅    |   ❌   |
+| Delete contract stage     |  ✅   |   ❌    |   ❌   |
 | Upload document           |  ✅   |   ✅    |   ❌   |
 | Download document         |  ✅   |   ✅    |   ✅   |
 | Delete document           |  ✅   |   ❌    |   ❌   |

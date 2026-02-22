@@ -137,6 +137,28 @@ CREATE TABLE IF NOT EXISTS `payments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
+-- ═══ CONTRACT STAGES ════════════════════════════════
+CREATE TABLE IF NOT EXISTS `contract_stages` (
+  `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `contract_id`   INT UNSIGNED NOT NULL,
+  `title`         VARCHAR(255) NOT NULL,
+  `status`        ENUM('planned','in_progress','completed','cancelled') NOT NULL DEFAULT 'planned',
+  `planned_date`  DATE         DEFAULT NULL,
+  `actual_date`   DATE         DEFAULT NULL,
+  `sort_order`    INT UNSIGNED NOT NULL DEFAULT 0,
+  `description`   TEXT         DEFAULT NULL,
+  `created_by`    INT UNSIGNED DEFAULT NULL,
+  `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_stage_contract` (`contract_id`),
+  KEY `idx_stage_status` (`status`),
+  KEY `idx_stage_plan` (`planned_date`),
+  CONSTRAINT `fk_stage_contract` FOREIGN KEY (`contract_id`) REFERENCES `contracts`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_stage_user` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- ═══ AUDIT LOG ═════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS `audit_log` (
   `id`           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

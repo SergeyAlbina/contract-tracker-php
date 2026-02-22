@@ -58,7 +58,7 @@ final class Html
             '223' => 'badge--cyan', '44' => 'badge--amber',
             'draft' => 'badge--slate', 'active' => 'badge--emerald', 'executed' => 'badge--sky',
             'terminated' => 'badge--rose', 'cancelled' => 'badge--rose',
-            'planned' => 'badge--slate', 'in_progress' => 'badge--sky',
+            'planned' => 'badge--slate', 'in_progress' => 'badge--sky', 'completed' => 'badge--emerald',
             'paid' => 'badge--emerald', 'canceled' => 'badge--rose',
             'rfq' => 'badge--sky', 'evaluation' => 'badge--amber',
             'awarded' => 'badge--emerald',

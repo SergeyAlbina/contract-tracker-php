@@ -184,6 +184,7 @@
  *   │   │   ├── Enum/LawType.php           223/44
  *   │   │   ├── Enum/ContractStatus.php    draft/active/executed/terminated/cancelled
  *   │   │   ├── Enum/PaymentStatus.php     planned/in_progress/paid/canceled
+ *   │   │   ├── Enum/StageStatus.php       planned/in_progress/completed/cancelled
  *   │   │   ├── Policy/LawPolicy.php       Валидация по закону
  *   │   │   ├── Security/Session.php       Сессии + flash + auth
  *   │   │   ├── Security/Csrf.php          CSRF-токены
@@ -198,7 +199,8 @@
  *   │       ├── Documents/         [✅ v1] Upload/download/delete
  *   │       ├── Payments/          [✅ v1] CRUD, статусы, привязка к контрактам
  *   │       ├── Users/             [✅ v1.1] CRUD пользователей + смена пароля
- *   │       └── Procurements/      [✅ v2.0] Закупки + коммерческие предложения (КП)
+ *   │       ├── Procurements/      [✅ v2.0] Закупки + коммерческие предложения (КП)
+ *   │       └── Stages/            [✅ v2.0] Этапы контракта (plan/fact)
  *   │
  *   ├── templates/
  *   │   ├── layout.php            ← HTML5 layout: topbar, flash, stagger-animation
@@ -206,7 +208,7 @@
  *   │   ├── contracts/
  *   │   │   ├── list.php          ← Таблица + фильтры + пагинация
  *   │   │   ├── form.php          ← Создание/редактирование (НМЦК toggle)
- *   │   │   └── view.php          ← Карточка: финансы + платежи + документы
+ *   │   │   └── view.php          ← Карточка: финансы + этапы + платежи + документы
  *   │   └── errors/{404,500}.php
  *   │
  *   ├── database/schema.sql       ← DDL: все таблицы + FK + индексы + seed
@@ -239,11 +241,17 @@
  *                 status(planned|in_progress|paid|canceled), payment_date,
  *                 purpose, invoice_number, created_by, timestamps
  *
+ *   contract_stages
+ *                 id, contract_id→contracts(CASCADE), title,
+ *                 status(planned|in_progress|completed|cancelled),
+ *                 planned_date, actual_date, sort_order, description,
+ *                 created_by, timestamps
+ *
  *   audit_log     id(BIGINT), user_id, action, entity_type, entity_id,
  *                 details(JSON), ip_address, user_agent, created_at
  *
  *   ПЛАНИРУЕМЫЕ ТАБЛИЦЫ (v2+):
- *     procurements, proposals, stages, acts, invoices, notifications, workload
+ *     acts, invoices, notifications, workload
  *
  *
  * ╔══════════════════════════════════════════════════════════════════════════════════╗
@@ -268,12 +276,14 @@
  *   POST /contracts/{id}/payments        Добавить платёж
  *   POST /payments/{id}/update           Обновить платёж
  *   POST /payments/{id}/delete           Удалить платёж
+ *   POST /contracts/{id}/stages          Добавить этап
+ *   POST /stages/{id}/update             Обновить этап
+ *   POST /stages/{id}/delete             Удалить этап
  *
  *   ПЛАН (v2+):
  *   GET  /procurements                   Закупки
  *   GET  /procurements/{id}              Карточка закупки
  *   POST /procurements/{id}/proposals    Добавить КП
- *   GET  /contracts/{id}/stages          Этапы
  *   GET  /audit                          Журнал аудита (admin)
  *   GET  /users                          Управление пользователями (admin)
  *   GET  /export/contracts               CSV/XLSX экспорт
@@ -408,7 +418,7 @@
  *
  *   v2.0
  *     [✅] Procurements: закупки с КП
- *     [ ] Stages: этапы контракта (plan/fact)
+ *     [✅] Stages: этапы контракта (plan/fact)
  *     [ ] Invoices + Acts: счета и акты
  *     [ ] Audit UI: просмотр лога (admin)
  *     [ ] Notifications: дедлайны, просрочки
@@ -432,8 +442,8 @@
  *
  *   Стек:        PHP 8.5+ · MySQL · HTML5 · CSS3 · ES6+ JavaScript
  *   Зависимости: 0 (ни Composer, ни npm, ни фреймворки)
- *   Модули:      4 изолированных (Auth, Contracts, Documents, Payments)
- *   Таблицы:     5 + audit_log
+ *   Модули:      7 изолированных (Auth, Contracts, Documents, Payments, Users, Procurements, Stages)
+ *   Таблицы:     7 + audit_log
  *   Принцип:     один модуль падает → система работает
  *   Масштаб:     от 320px мобилки до 4K монитора
  *   Хостинг:     любой shared с PHP 8.5 и MySQL

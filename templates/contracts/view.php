@@ -1,11 +1,12 @@
 <?php
 use App\Shared\Utils\Html;
-use App\Shared\Enum\{LawType, ContractStatus, PaymentStatus};
+use App\Shared\Enum\{LawType, ContractStatus, PaymentStatus, StageStatus};
 /** @var array $contract */
 $c = $contract;
 
-// Подгружаем платежи и документы (fault-tolerant: если модуль отключён — пусто)
-$payments = $documents = [];
+// Подгружаем этапы/платежи/документы (fault-tolerant: если модуль отключён — пусто)
+$stages = $payments = $documents = [];
+try { $stages    = $app->make(\App\Modules\Stages\StagesService::class)->getByContract((int)$c['id']); } catch (\Throwable) {}
 try { $payments  = $app->make(\App\Modules\Payments\PaymentsService::class)->getByContract((int)$c['id']); } catch (\Throwable) {}
 try { $documents = $app->make(\App\Modules\Documents\DocumentsService::class)->getByContract((int)$c['id']); } catch (\Throwable) {}
 
@@ -66,6 +67,131 @@ $canEdit = $session->hasRole('admin', 'manager');
     <?php endif; ?>
   </div>
 </div>
+
+<!-- ЭТАПЫ -->
+<h3 class="section-title">🧭 Этапы (<?= count($stages) ?>)</h3>
+
+<?php if ($stages): ?>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>#</th><th>Этап</th><th>План</th><th>Факт</th><th>Статус</th><th>Комментарий</th><?php if($canEdit):?><th></th><?php endif;?></tr></thead>
+    <tbody>
+      <?php foreach ($stages as $s): ?>
+      <?php $stageStatus = StageStatus::tryFrom((string)$s['status']); ?>
+      <tr>
+        <td class="td-num"><?= (int)$s['sort_order'] ?></td>
+        <td><?= Html::e($s['title']) ?></td>
+        <td class="text-muted"><?= Html::date($s['planned_date']) ?></td>
+        <td class="text-muted"><?= Html::date($s['actual_date']) ?></td>
+        <td><?= Html::badge((string)$s['status'], $stageStatus?->label() ?? (string)$s['status']) ?></td>
+        <td><?= Html::e($s['description'] ? Html::truncate((string)$s['description'], 90) : '—') ?></td>
+        <?php if ($canEdit): ?>
+        <td style="text-align:right">
+          <a href="#stage-edit-<?= (int)$s['id'] ?>" class="btn btn--ghost btn--sm">✏️</a>
+          <?php if ($session->hasRole('admin')): ?>
+          <form method="post" action="/stages/<?= (int)$s['id'] ?>/delete" style="display:inline">
+            <?= $csrf->field() ?>
+            <input type="hidden" name="contract_id" value="<?= (int)$c['id'] ?>">
+            <button type="submit" class="btn--icon" data-confirm="Удалить этап?">🗑</button>
+          </form>
+          <?php endif; ?>
+        </td>
+        <?php endif; ?>
+      </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+</div>
+<?php else: ?>
+<div class="empty">
+  <div class="empty__icon">🧭</div>
+  <p>Этапы пока не добавлены</p>
+</div>
+<?php endif; ?>
+
+<?php if ($canEdit): ?>
+<div class="card mt-2">
+  <div class="card__head"><div class="card__title">Добавить этап</div></div>
+  <form method="post" action="/contracts/<?= (int)$c['id'] ?>/stages">
+    <?= $csrf->field() ?>
+    <div class="form-grid">
+      <div class="fg">
+        <label>Порядок</label>
+        <input type="number" name="sort_order" min="0" step="1" value="0">
+      </div>
+      <div class="fg">
+        <label>Название этапа *</label>
+        <input type="text" name="title" required>
+      </div>
+      <div class="fg">
+        <label>Статус</label>
+        <select name="status">
+          <?php foreach (StageStatus::cases() as $ss): ?>
+            <option value="<?= $ss->value ?>"><?= $ss->label() ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="fg">
+        <label>Плановая дата</label>
+        <input type="date" name="planned_date">
+      </div>
+      <div class="fg">
+        <label>Фактическая дата</label>
+        <input type="date" name="actual_date">
+      </div>
+      <div class="fg form-grid--full">
+        <label>Комментарий</label>
+        <textarea name="description"></textarea>
+      </div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn--primary btn--sm">+ Добавить этап</button></div>
+  </form>
+</div>
+
+<?php if ($stages): ?>
+<div class="card mt-2">
+  <div class="card__head"><div class="card__title">Редактировать этапы</div></div>
+  <?php foreach ($stages as $s): ?>
+    <?php $currentStageStatus = StageStatus::tryFrom((string)$s['status']) ?? StageStatus::PLANNED; ?>
+    <form method="post" action="/stages/<?= (int)$s['id'] ?>/update" id="stage-edit-<?= (int)$s['id'] ?>" class="mt-2">
+      <?= $csrf->field() ?>
+      <input type="hidden" name="contract_id" value="<?= (int)$c['id'] ?>">
+      <div class="form-grid">
+        <div class="fg">
+          <label>Порядок</label>
+          <input type="number" name="sort_order" min="0" step="1" value="<?= (int)$s['sort_order'] ?>">
+        </div>
+        <div class="fg">
+          <label>Название этапа *</label>
+          <input type="text" name="title" value="<?= Html::e($s['title']) ?>" required>
+        </div>
+        <div class="fg">
+          <label>Статус</label>
+          <select name="status">
+            <?php foreach (StageStatus::cases() as $ss): ?>
+              <option value="<?= $ss->value ?>" <?= $currentStageStatus === $ss ? 'selected' : '' ?>><?= $ss->label() ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="fg">
+          <label>Плановая дата</label>
+          <input type="date" name="planned_date" value="<?= Html::e((string)($s['planned_date'] ?? '')) ?>">
+        </div>
+        <div class="fg">
+          <label>Фактическая дата</label>
+          <input type="date" name="actual_date" value="<?= Html::e((string)($s['actual_date'] ?? '')) ?>">
+        </div>
+        <div class="fg form-grid--full">
+          <label>Комментарий</label>
+          <textarea name="description"><?= Html::e((string)($s['description'] ?? '')) ?></textarea>
+        </div>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn btn--ghost btn--sm">Сохранить этап</button></div>
+    </form>
+  <?php endforeach; ?>
+</div>
+<?php endif; ?>
+<?php endif; ?>
 
 <!-- ПЛАТЕЖИ -->
 <h3 class="section-title">💳 Платежи (<?= count($payments) ?>)</h3>

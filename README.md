@@ -10,6 +10,7 @@ Contract Lifecycle Tracker для 223-ФЗ / 44-ФЗ без фреймворко
 - Auth: логин/логаут, rate limit, audit
 - Contracts: CRUD, фильтры, пагинация, карточка, финансы
 - Procurements: CRUD закупок + КП (выбор победителя)
+- Stages: этапы исполнения контракта (plan/fact), CRUD
 - Payments: CRUD, статусы, привязка к контракту
 - Documents: upload/download/delete с защитой
 - Users: admin CRUD + смена пароля
@@ -57,6 +58,7 @@ php -S 127.0.0.1:8000 -t public
 - `GET /contracts` — список контрактов
 - `GET /contracts/export.csv` — CSV экспорт (учитывает фильтры `search/law_type/status`)
 - `GET /procurements` — список закупок
+- `POST /contracts/{id}/stages` — добавить этап контракта
 - `GET /users` — управление пользователями (admin)
 - `GET /profile/password` — смена своего пароля
 
