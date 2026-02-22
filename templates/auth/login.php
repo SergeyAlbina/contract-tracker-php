@@ -7,13 +7,29 @@ $flashes = $session->getFlashes();
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#07080d">
   <title>Вход — Contract Tracker</title>
+  <script>
+    (function () {
+      var theme = 'dark';
+      try {
+        var saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') {
+          theme = saved;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      } catch (e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.style.colorScheme = theme;
+    })();
+  </script>
   <link rel="stylesheet" href="/assets/app.css">
 </head>
 <body>
 <div class="login-page">
+  <button type="button" class="btn btn--ghost btn--sm theme-toggle theme-toggle--floating" data-theme-toggle aria-label="Переключить тему">Тема</button>
   <div class="login-card">
     <div style="text-align:center;margin-bottom:.5rem">
       <div class="topbar__brand-icon" style="width:48px;height:48px;font-size:1.4rem;margin:0 auto .75rem;border-radius:14px">📋</div>
@@ -39,5 +55,6 @@ $flashes = $session->getFlashes();
     </form>
   </div>
 </div>
+<script src="/assets/app.js" defer></script>
 </body>
 </html>

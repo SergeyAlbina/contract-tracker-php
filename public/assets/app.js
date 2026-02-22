@@ -3,6 +3,53 @@
  * ES2023 · No dependencies
  */
 
+// ── Theme toggle (global) ──
+const themeButtons = document.querySelectorAll('[data-theme-toggle]');
+const themeMeta = document.querySelector('meta[name="theme-color"]');
+const themeColorMap = { dark: '#07080d', light: '#f4f7fc' };
+
+const detectTheme = () => {
+  const attrTheme = document.documentElement.getAttribute('data-theme');
+  if (attrTheme === 'dark' || attrTheme === 'light') return attrTheme;
+
+  try {
+    const saved = localStorage.getItem('theme');
+    if (saved === 'dark' || saved === 'light') return saved;
+  } catch (e) {}
+
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    return 'light';
+  }
+  return 'dark';
+};
+
+const applyTheme = (theme, persist = false) => {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.style.colorScheme = theme;
+
+  if (themeMeta) {
+    themeMeta.setAttribute('content', themeColorMap[theme] || themeColorMap.dark);
+  }
+
+  themeButtons.forEach((button) => {
+    button.textContent = theme === 'dark' ? 'Тема: темная' : 'Тема: светлая';
+    button.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+  });
+
+  if (persist) {
+    try { localStorage.setItem('theme', theme); } catch (e) {}
+  }
+};
+
+applyTheme(detectTheme());
+
+themeButtons.forEach((button) => {
+  button.addEventListener('click', () => {
+    const nextTheme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    applyTheme(nextTheme, true);
+  });
+});
+
 // ── Flash auto-dismiss ──
 document.querySelectorAll('.flash').forEach(el => {
   setTimeout(() => {

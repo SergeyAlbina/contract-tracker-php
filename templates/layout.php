@@ -3,9 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="color-scheme" content="dark">
+  <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#07080d">
   <title><?= \App\Shared\Utils\Html::e($title ?? 'Contract Tracker') ?></title>
+  <script>
+    (function () {
+      var theme = 'dark';
+      try {
+        var saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') {
+          theme = saved;
+        } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+          theme = 'light';
+        }
+      } catch (e) {}
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.style.colorScheme = theme;
+    })();
+  </script>
   <link rel="stylesheet" href="/assets/app.css">
 </head>
 <body>
@@ -39,6 +54,7 @@
     <div class="topbar__user">
       <span class="user-name"><?= Html::e($user['full_name']) ?></span>
       <?= Html::badge($user['role'], $user['role']) ?>
+      <button type="button" class="btn btn--ghost btn--sm theme-toggle" data-theme-toggle aria-label="Переключить тему">Тема</button>
       <a href="/profile/password" class="btn btn--ghost btn--sm">🔐 Сменить пароль</a>
       <form method="post" action="/logout" style="display:inline">
         <?= $csrf->field() ?>
