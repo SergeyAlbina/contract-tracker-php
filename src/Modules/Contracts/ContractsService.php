@@ -16,6 +16,8 @@ final class ContractsService
 
     public function list(int $page, array $filters): array { return $this->repo->paginate($page, 20, $filters); }
 
+    public function export(array $filters): array { return $this->repo->exportRows($filters); }
+
     /** @return array{success:bool, id?:int, errors?:string[]} */
     public function create(ContractCreateDto $dto): array
     {

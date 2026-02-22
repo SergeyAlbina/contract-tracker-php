@@ -3,6 +3,7 @@ declare(strict_types=1);
 use App\Modules\Contracts\ContractsController;
 /** @var \App\Http\Router $router */
 $router->get('/contracts',                  [ContractsController::class, 'index']);
+$router->get('/contracts/export.csv',       [ContractsController::class, 'exportCsv']);
 $router->get('/contracts/new',              [ContractsController::class, 'create'], ['roles' => ['admin', 'manager']]);
 $router->post('/contracts',                 [ContractsController::class, 'store'], ['roles' => ['admin', 'manager']]);
 $router->get('/contracts/{id:\d+}',         [ContractsController::class, 'show']);

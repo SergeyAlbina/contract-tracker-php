@@ -12,19 +12,10 @@ final class ContractsRepository
     /** @return array{items:array, total:int} */
     public function paginate(int $page, int $perPage, array $filters): array
     {
-        $w = ['1=1']; $p = [];
-
-        if (!empty($filters['search'])) {
-            $w[] = '(c.number LIKE :s1 OR c.subject LIKE :s2 OR c.contractor_name LIKE :s3)';
-            $p['s1'] = $p['s2'] = $p['s3'] = '%' . $filters['search'] . '%';
-        }
-        if (!empty($filters['law_type']))  { $w[] = 'c.law_type = :lt'; $p['lt'] = $filters['law_type']; }
-        if (!empty($filters['status']))    { $w[] = 'c.status = :st';   $p['st'] = $filters['status']; }
-
-        $where = implode(' AND ', $w);
+        [$where, $params] = $this->buildWhere($filters);
 
         $stmt = $this->pdo->prepare("SELECT COUNT(*) FROM contracts c WHERE {$where}");
-        $stmt->execute($p);
+        $stmt->execute($params);
         $total = (int) $stmt->fetchColumn();
 
         $offset = ($page - 1) * $perPage;
@@ -33,7 +24,9 @@ final class ContractsRepository
              LEFT JOIN users u ON u.id = c.created_by
              WHERE {$where} ORDER BY c.created_at DESC LIMIT :lim OFFSET :off"
         );
-        foreach ($p as $k => $v) $stmt->bindValue($k, $v);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue(':' . $key, $value);
+        }
         $stmt->bindValue('lim', $perPage, \PDO::PARAM_INT);
         $stmt->bindValue('off', $offset, \PDO::PARAM_INT);
         $stmt->execute();
@@ -73,5 +66,44 @@ final class ContractsRepository
         $s = $this->pdo->prepare("SELECT COALESCE(SUM(amount),0) FROM payments WHERE contract_id = :id AND status = 'paid'");
         $s->execute(['id' => $contractId]);
         return (float) $s->fetchColumn();
+    }
+
+    public function exportRows(array $filters): array
+    {
+        [$where, $params] = $this->buildWhere($filters);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT c.id, c.number, c.subject, c.law_type, c.contractor_name, c.contractor_inn,
+                    c.total_amount, c.nmck_amount, c.status, c.signed_at, c.expires_at,
+                    c.created_at, u.full_name AS creator_name
+             FROM contracts c
+             LEFT JOIN users u ON u.id = c.created_by
+             WHERE {$where}
+             ORDER BY c.created_at DESC"
+        );
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    /** @return array{0:string, 1:array<string,mixed>} */
+    private function buildWhere(array $filters): array
+    {
+        $where = ['1=1'];
+        $params = [];
+
+        if (!empty($filters['search'])) {
+            $where[] = '(c.number LIKE :s1 OR c.subject LIKE :s2 OR c.contractor_name LIKE :s3)';
+            $params['s1'] = $params['s2'] = $params['s3'] = '%' . $filters['search'] . '%';
+        }
+        if (!empty($filters['law_type'])) {
+            $where[] = 'c.law_type = :lt';
+            $params['lt'] = $filters['law_type'];
+        }
+        if (!empty($filters['status'])) {
+            $where[] = 'c.status = :st';
+            $params['st'] = $filters['status'];
+        }
+
+        return [implode(' AND ', $where), $params];
     }
 }

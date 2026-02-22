@@ -2,11 +2,19 @@
 use App\Shared\Utils\Html;
 use App\Shared\Enum\{LawType, ContractStatus};
 /** @var array $items @var int $total @var int $page @var int $pages @var array $filters */
+$canEdit = $session->hasRole('admin', 'manager');
+$exportQuery = http_build_query(array_filter($filters, static fn($v) => $v !== '' && $v !== null));
+$exportUrl = '/contracts/export.csv' . ($exportQuery ? '?' . $exportQuery : '');
 ?>
 
 <div class="page-head">
   <h1>📄 Контракты <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
-  <a href="/contracts/new" class="btn btn--primary">+ Новый контракт</a>
+  <div class="flex gap-sm">
+    <a href="<?= Html::e($exportUrl) ?>" class="btn btn--ghost">⬇ CSV</a>
+    <?php if ($canEdit): ?>
+      <a href="/contracts/new" class="btn btn--primary">+ Новый контракт</a>
+    <?php endif; ?>
+  </div>
 </div>
 
 <form class="filters" method="get" action="/contracts">
@@ -30,7 +38,9 @@ use App\Shared\Enum\{LawType, ContractStatus};
   <div class="empty">
     <div class="empty__icon">📂</div>
     <p>Контрактов не найдено</p>
-    <a href="/contracts/new" class="btn btn--primary mt-2" style="display:inline-flex">+ Создать первый</a>
+    <?php if ($canEdit): ?>
+      <a href="/contracts/new" class="btn btn--primary mt-2" style="display:inline-flex">+ Создать первый</a>
+    <?php endif; ?>
   </div>
 <?php else: ?>
   <div class="table-wrap">
