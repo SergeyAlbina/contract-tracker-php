@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#07080d">
-  <title><?= \App\Shared\Utils\Html::e($title ?? 'Contract Tracker') ?></title>
+  <title><?= \App\Shared\Utils\Html::e($title ?? 'Реестр контрактов') ?></title>
   <script>
     (function () {
       var theme = 'dark';
@@ -30,13 +30,14 @@
   $flashes = $session->getFlashes();
   $failed = $app->failedModules();
   $uriPath = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
+  $roleLabels = ['admin' => 'Администратор', 'manager' => 'Менеджер', 'viewer' => 'Наблюдатель'];
 ?>
 <div class="shell">
 
   <header class="topbar" role="banner">
     <a href="/contracts" class="topbar__brand">
       <div class="topbar__brand-icon">📋</div>
-      Contract Tracker
+      Реестр контрактов
     </a>
 
     <nav class="topbar__nav" role="navigation">
@@ -48,7 +49,7 @@
       </a>
       <?php if (($user['role'] ?? '') === 'admin'): ?>
       <a href="/users" class="<?= str_starts_with($uriPath, '/users') ? 'active' : '' ?>">
-        👥 <span class="nav-text">Users</span>
+        👥 <span class="nav-text">Пользователи</span>
       </a>
       <?php endif; ?>
     </nav>
@@ -56,7 +57,7 @@
     <?php if ($user): ?>
     <div class="topbar__user">
       <span class="user-name"><?= Html::e($user['full_name']) ?></span>
-      <?= Html::badge($user['role'], $user['role']) ?>
+      <?= Html::badge((string) $user['role'], $roleLabels[(string) $user['role']] ?? 'Роль') ?>
       <button type="button" class="btn btn--ghost btn--sm theme-toggle" data-theme-toggle aria-label="Переключить тему">Тема</button>
       <a href="/profile/password" class="btn btn--ghost btn--sm">🔐 Сменить пароль</a>
       <form method="post" action="/logout" style="display:inline">

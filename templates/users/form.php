@@ -32,16 +32,16 @@ $checked = (($u['is_active'] ?? '1') === '1' || (int)($u['is_active'] ?? 1) === 
       </div>
 
       <div class="fg">
-        <label for="email">Email</label>
+        <label for="email">Эл. почта</label>
         <input type="email" id="email" name="email" value="<?= $v('email') ?>" maxlength="255">
       </div>
 
       <div class="fg">
         <label for="role">Роль *</label>
         <select id="role" name="role" required>
-          <option value="admin" <?= ($u['role'] ?? 'viewer') === 'admin' ? 'selected' : '' ?>>admin</option>
-          <option value="manager" <?= ($u['role'] ?? 'viewer') === 'manager' ? 'selected' : '' ?>>manager</option>
-          <option value="viewer" <?= ($u['role'] ?? 'viewer') === 'viewer' ? 'selected' : '' ?>>viewer</option>
+          <option value="admin" <?= ($u['role'] ?? 'viewer') === 'admin' ? 'selected' : '' ?>>Администратор</option>
+          <option value="manager" <?= ($u['role'] ?? 'viewer') === 'manager' ? 'selected' : '' ?>>Менеджер</option>
+          <option value="viewer" <?= ($u['role'] ?? 'viewer') === 'viewer' ? 'selected' : '' ?>>Наблюдатель</option>
         </select>
       </div>
 

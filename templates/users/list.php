@@ -4,9 +4,9 @@ use App\Shared\Utils\Html;
 /** @var array $items */
 $currentUserId = (int) (($app->currentUser()['id'] ?? 0));
 $roleLabels = [
-    'admin' => 'admin',
-    'manager' => 'manager',
-    'viewer' => 'viewer',
+    'admin' => 'Администратор',
+    'manager' => 'Менеджер',
+    'viewer' => 'Наблюдатель',
 ];
 ?>
 
@@ -27,7 +27,7 @@ $roleLabels = [
         <tr>
           <th>Логин</th>
           <th>ФИО</th>
-          <th>Email</th>
+          <th>Эл. почта</th>
           <th>Роль</th>
           <th>Статус</th>
           <th>Создан</th>
@@ -43,9 +43,9 @@ $roleLabels = [
           <td><?= Html::badge((string) $u['role'], $roleLabels[$u['role']] ?? (string) $u['role']) ?></td>
           <td>
             <?php if ((int) $u['is_active'] === 1): ?>
-              <span class="badge badge--emerald">active</span>
+              <span class="badge badge--emerald">Активен</span>
             <?php else: ?>
-              <span class="badge badge--rose">inactive</span>
+              <span class="badge badge--rose">Отключён</span>
             <?php endif; ?>
           </td>
           <td class="text-muted"><?= Html::date($u['created_at']) ?></td>

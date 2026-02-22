@@ -10,7 +10,7 @@ $exportUrl = '/contracts/export.csv' . ($exportQuery ? '?' . $exportQuery : '');
 <div class="page-head">
   <h1>📄 Контракты <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
   <div class="flex gap-sm">
-    <a href="<?= Html::e($exportUrl) ?>" class="btn btn--ghost">⬇ CSV</a>
+    <a href="<?= Html::e($exportUrl) ?>" class="btn btn--ghost">⬇ Экспорт</a>
     <?php if ($canEdit): ?>
       <a href="/contracts/new" class="btn btn--primary">+ Новый контракт</a>
     <?php endif; ?>

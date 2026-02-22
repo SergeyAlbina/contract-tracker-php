@@ -7,6 +7,15 @@ $p = $procurement;
 $proposals = $p['proposals'] ?? [];
 $winner = $p['winner'] ?? null;
 $canEdit = $session->hasRole('admin', 'manager');
+$currencyLabel = static function (?string $code): string {
+    return match (strtoupper((string) $code)) {
+        'RUB' => 'руб.',
+        'USD' => 'долл.',
+        'EUR' => 'евро',
+        'CNY' => 'юань',
+        default => 'усл. ед.',
+    };
+};
 ?>
 
 <div class="page-head">
@@ -93,8 +102,8 @@ $canEdit = $session->hasRole('admin', 'manager');
         <tr>
           <td><?= Html::e($proposal['supplier_name']) ?></td>
           <td class="td-num"><?= Html::e($proposal['supplier_inn'] ?: '—') ?></td>
-          <td class="td-num" style="text-align:right"><?= Html::money((float) $proposal['amount'], (string) $proposal['currency']) ?></td>
-          <td><?= Html::e($proposal['currency']) ?></td>
+          <td class="td-num" style="text-align:right"><?= Html::money((float) $proposal['amount'], $currencyLabel((string) $proposal['currency'])) ?></td>
+          <td><?= Html::e($currencyLabel((string) $proposal['currency'])) ?></td>
           <td class="text-muted"><?= Html::date($proposal['submitted_at'] ?? null) ?></td>
           <td>
             <?php if ((int) $proposal['is_winner'] === 1): ?>
@@ -150,7 +159,7 @@ $canEdit = $session->hasRole('admin', 'manager');
       </div>
       <div class="fg">
         <label>Валюта</label>
-        <input type="text" name="currency" value="RUB" maxlength="3" pattern="[A-Za-z]{3}">
+        <input type="text" name="currency" value="" maxlength="3" pattern="[A-Za-z]{3}" placeholder="Трёхбуквенный код">
       </div>
       <div class="fg">
         <label>Дата предложения</label>

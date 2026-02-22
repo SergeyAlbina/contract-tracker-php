@@ -406,8 +406,8 @@
  *     [✅] Documents: upload/download/delete с защитой
  *     [✅] Payments: CRUD, статусы, остаток/перерасход
  *     [✅] Безопасность: CSRF, RBAC, session, hashing, XSS, SQLi
- *     [✅] UI: CSS3 тёмная тема, glass, animations, auto-scale
- *     [✅] MySQL: 5 таблиц, FK, индексы, audit_log
+ *     [✅] UI: CSS3, переключение тёмной/светлой темы, русификация интерфейса
+ *     [✅] MySQL: users, contracts, documents, payments, procurements, КП, stages, audit_log
  *     [✅] HTML5: семантика, доступность, формы
  *     [✅] Отказоустойчивость: модули изолированы
  *
@@ -419,7 +419,7 @@
  *   v2.0
  *     [✅] Procurements: закупки с КП
  *     [✅] Stages: этапы контракта (plan/fact)
- *     [ ] Invoices + Acts: счета и акты
+ *     [ ] Invoices + Acts: счета и акты (следующий шаг)
  *     [ ] Audit UI: просмотр лога (admin)
  *     [ ] Notifications: дедлайны, просрочки
  *     [ ] Export: XLSX, ZIP-пакет

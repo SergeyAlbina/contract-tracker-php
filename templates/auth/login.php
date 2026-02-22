@@ -9,7 +9,7 @@ $flashes = $session->getFlashes();
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#07080d">
-  <title>Вход — Contract Tracker</title>
+  <title>Вход — Реестр контрактов</title>
   <script>
     (function () {
       var theme = 'dark';
@@ -34,7 +34,7 @@ $flashes = $session->getFlashes();
     <div style="text-align:center;margin-bottom:.5rem">
       <div class="topbar__brand-icon" style="width:48px;height:48px;font-size:1.4rem;margin:0 auto .75rem;border-radius:14px">📋</div>
     </div>
-    <h1>Contract Tracker</h1>
+    <h1>Реестр контрактов</h1>
     <p class="subtitle">Система управления контрактами 223-ФЗ / 44-ФЗ</p>
 
     <?php foreach ($flashes as $f): ?>
@@ -45,7 +45,7 @@ $flashes = $session->getFlashes();
       <?= $csrf->field() ?>
       <div class="fg">
         <label for="login">Логин</label>
-        <input type="text" id="login" name="login" required autofocus autocomplete="username" placeholder="admin">
+        <input type="text" id="login" name="login" required autofocus autocomplete="username" placeholder="Введите логин">
       </div>
       <div class="fg">
         <label for="password">Пароль</label>
