@@ -1,12 +1,17 @@
 <?php
 use App\Shared\Utils\Html;
-use App\Shared\Enum\{LawType, ContractStatus, PaymentStatus, StageStatus};
+use App\Shared\Enum\{LawType, ContractStatus, PaymentStatus, StageStatus, InvoiceStatus, ActStatus};
 /** @var array $contract */
 $c = $contract;
 
-// Подгружаем этапы/платежи/документы (fault-tolerant: если модуль отключён — пусто)
-$stages = $payments = $documents = [];
+// Подгружаем этапы/счета/акты/платежи/документы (fault-tolerant: если модуль отключён — пусто)
+$stages = $invoices = $acts = $payments = $documents = [];
 try { $stages    = $app->make(\App\Modules\Stages\StagesService::class)->getByContract((int)$c['id']); } catch (\Throwable) {}
+try {
+  $billing = $app->make(\App\Modules\BillingDocs\BillingDocsService::class);
+  $invoices = $billing->getInvoicesByContract((int)$c['id']);
+  $acts = $billing->getActsByContract((int)$c['id']);
+} catch (\Throwable) {}
 try { $payments  = $app->make(\App\Modules\Payments\PaymentsService::class)->getByContract((int)$c['id']); } catch (\Throwable) {}
 try { $documents = $app->make(\App\Modules\Documents\DocumentsService::class)->getByContract((int)$c['id']); } catch (\Throwable) {}
 
@@ -187,6 +192,247 @@ $canEdit = $session->hasRole('admin', 'manager');
         </div>
       </div>
       <div class="form-actions"><button type="submit" class="btn btn--ghost btn--sm">Сохранить этап</button></div>
+    </form>
+  <?php endforeach; ?>
+</div>
+<?php endif; ?>
+<?php endif; ?>
+
+<!-- СЧЕТА -->
+<h3 class="section-title">🧾 Счета (<?= count($invoices) ?>)</h3>
+
+<?php if ($invoices): ?>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Номер</th><th>Дата</th><th>Оплатить до</th><th>Статус</th><th style="text-align:right">Сумма</th><th>Комментарий</th><?php if($canEdit):?><th></th><?php endif;?></tr></thead>
+    <tbody>
+      <?php foreach ($invoices as $inv): ?>
+      <?php $invoiceStatus = InvoiceStatus::tryFrom((string)$inv['status']); ?>
+      <tr>
+        <td class="td-num"><?= Html::e($inv['invoice_number']) ?></td>
+        <td class="text-muted"><?= Html::date($inv['invoice_date']) ?></td>
+        <td class="text-muted"><?= Html::date($inv['due_date']) ?></td>
+        <td><?= Html::badge((string)$inv['status'], $invoiceStatus?->label() ?? (string)$inv['status']) ?></td>
+        <td class="td-num" style="text-align:right"><?= Html::money($inv['amount']) ?></td>
+        <td><?= Html::e($inv['comment'] ? Html::truncate((string)$inv['comment'], 90) : '—') ?></td>
+        <?php if ($canEdit): ?>
+        <td style="text-align:right">
+          <a href="#invoice-edit-<?= (int)$inv['id'] ?>" class="btn btn--ghost btn--sm">✏️</a>
+          <?php if ($session->hasRole('admin')): ?>
+          <form method="post" action="/invoices/<?= (int)$inv['id'] ?>/delete" style="display:inline">
+            <?= $csrf->field() ?>
+            <input type="hidden" name="contract_id" value="<?= (int)$c['id'] ?>">
+            <button type="submit" class="btn--icon" data-confirm="Удалить счёт?">🗑</button>
+          </form>
+          <?php endif; ?>
+        </td>
+        <?php endif; ?>
+      </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+</div>
+<?php else: ?>
+<div class="empty">
+  <div class="empty__icon">🧾</div>
+  <p>Счета пока не добавлены</p>
+</div>
+<?php endif; ?>
+
+<?php if ($canEdit): ?>
+<div class="card mt-2">
+  <div class="card__head"><div class="card__title">Добавить счёт</div></div>
+  <form method="post" action="/contracts/<?= (int)$c['id'] ?>/invoices">
+    <?= $csrf->field() ?>
+    <div class="form-grid">
+      <div class="fg">
+        <label>Номер счёта *</label>
+        <input type="text" name="invoice_number" required>
+      </div>
+      <div class="fg">
+        <label>Дата счёта</label>
+        <input type="date" name="invoice_date">
+      </div>
+      <div class="fg">
+        <label>Оплатить до</label>
+        <input type="date" name="due_date">
+      </div>
+      <div class="fg">
+        <label>Сумма *</label>
+        <input type="number" name="amount" step="0.01" min="0.01" required>
+      </div>
+      <div class="fg">
+        <label>Статус</label>
+        <select name="status">
+          <?php foreach (InvoiceStatus::cases() as $is): ?>
+            <option value="<?= $is->value ?>"><?= $is->label() ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="fg form-grid--full">
+        <label>Комментарий</label>
+        <textarea name="comment"></textarea>
+      </div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn--primary btn--sm">+ Добавить счёт</button></div>
+  </form>
+</div>
+
+<?php if ($invoices): ?>
+<div class="card mt-2">
+  <div class="card__head"><div class="card__title">Редактировать счета</div></div>
+  <?php foreach ($invoices as $inv): ?>
+    <?php $currentInvoiceStatus = InvoiceStatus::tryFrom((string)$inv['status']) ?? InvoiceStatus::ISSUED; ?>
+    <form method="post" action="/invoices/<?= (int)$inv['id'] ?>/update" id="invoice-edit-<?= (int)$inv['id'] ?>" class="mt-2">
+      <?= $csrf->field() ?>
+      <input type="hidden" name="contract_id" value="<?= (int)$c['id'] ?>">
+      <div class="form-grid">
+        <div class="fg">
+          <label>Номер счёта *</label>
+          <input type="text" name="invoice_number" value="<?= Html::e((string)$inv['invoice_number']) ?>" required>
+        </div>
+        <div class="fg">
+          <label>Дата счёта</label>
+          <input type="date" name="invoice_date" value="<?= Html::e((string)($inv['invoice_date'] ?? '')) ?>">
+        </div>
+        <div class="fg">
+          <label>Оплатить до</label>
+          <input type="date" name="due_date" value="<?= Html::e((string)($inv['due_date'] ?? '')) ?>">
+        </div>
+        <div class="fg">
+          <label>Сумма *</label>
+          <input type="number" name="amount" step="0.01" min="0.01" value="<?= Html::e((string)$inv['amount']) ?>" required>
+        </div>
+        <div class="fg">
+          <label>Статус</label>
+          <select name="status">
+            <?php foreach (InvoiceStatus::cases() as $is): ?>
+              <option value="<?= $is->value ?>" <?= $currentInvoiceStatus === $is ? 'selected' : '' ?>><?= $is->label() ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="fg form-grid--full">
+          <label>Комментарий</label>
+          <textarea name="comment"><?= Html::e((string)($inv['comment'] ?? '')) ?></textarea>
+        </div>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn btn--ghost btn--sm">Сохранить счёт</button></div>
+    </form>
+  <?php endforeach; ?>
+</div>
+<?php endif; ?>
+<?php endif; ?>
+
+<!-- АКТЫ -->
+<h3 class="section-title">📑 Акты (<?= count($acts) ?>)</h3>
+
+<?php if ($acts): ?>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Номер</th><th>Дата</th><th>Статус</th><th style="text-align:right">Сумма</th><th>Комментарий</th><?php if($canEdit):?><th></th><?php endif;?></tr></thead>
+    <tbody>
+      <?php foreach ($acts as $act): ?>
+      <?php $actStatus = ActStatus::tryFrom((string)$act['status']); ?>
+      <tr>
+        <td class="td-num"><?= Html::e($act['act_number']) ?></td>
+        <td class="text-muted"><?= Html::date($act['act_date']) ?></td>
+        <td><?= Html::badge((string)$act['status'], $actStatus?->label() ?? (string)$act['status']) ?></td>
+        <td class="td-num" style="text-align:right"><?= Html::money($act['amount']) ?></td>
+        <td><?= Html::e($act['comment'] ? Html::truncate((string)$act['comment'], 90) : '—') ?></td>
+        <?php if ($canEdit): ?>
+        <td style="text-align:right">
+          <a href="#act-edit-<?= (int)$act['id'] ?>" class="btn btn--ghost btn--sm">✏️</a>
+          <?php if ($session->hasRole('admin')): ?>
+          <form method="post" action="/acts/<?= (int)$act['id'] ?>/delete" style="display:inline">
+            <?= $csrf->field() ?>
+            <input type="hidden" name="contract_id" value="<?= (int)$c['id'] ?>">
+            <button type="submit" class="btn--icon" data-confirm="Удалить акт?">🗑</button>
+          </form>
+          <?php endif; ?>
+        </td>
+        <?php endif; ?>
+      </tr>
+      <?php endforeach; ?>
+    </tbody>
+  </table>
+</div>
+<?php else: ?>
+<div class="empty">
+  <div class="empty__icon">📑</div>
+  <p>Акты пока не добавлены</p>
+</div>
+<?php endif; ?>
+
+<?php if ($canEdit): ?>
+<div class="card mt-2">
+  <div class="card__head"><div class="card__title">Добавить акт</div></div>
+  <form method="post" action="/contracts/<?= (int)$c['id'] ?>/acts">
+    <?= $csrf->field() ?>
+    <div class="form-grid">
+      <div class="fg">
+        <label>Номер акта *</label>
+        <input type="text" name="act_number" required>
+      </div>
+      <div class="fg">
+        <label>Дата акта</label>
+        <input type="date" name="act_date">
+      </div>
+      <div class="fg">
+        <label>Сумма *</label>
+        <input type="number" name="amount" step="0.01" min="0.01" required>
+      </div>
+      <div class="fg">
+        <label>Статус</label>
+        <select name="status">
+          <?php foreach (ActStatus::cases() as $as): ?>
+            <option value="<?= $as->value ?>"><?= $as->label() ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div class="fg form-grid--full">
+        <label>Комментарий</label>
+        <textarea name="comment"></textarea>
+      </div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn--primary btn--sm">+ Добавить акт</button></div>
+  </form>
+</div>
+
+<?php if ($acts): ?>
+<div class="card mt-2">
+  <div class="card__head"><div class="card__title">Редактировать акты</div></div>
+  <?php foreach ($acts as $act): ?>
+    <?php $currentActStatus = ActStatus::tryFrom((string)$act['status']) ?? ActStatus::PENDING; ?>
+    <form method="post" action="/acts/<?= (int)$act['id'] ?>/update" id="act-edit-<?= (int)$act['id'] ?>" class="mt-2">
+      <?= $csrf->field() ?>
+      <input type="hidden" name="contract_id" value="<?= (int)$c['id'] ?>">
+      <div class="form-grid">
+        <div class="fg">
+          <label>Номер акта *</label>
+          <input type="text" name="act_number" value="<?= Html::e((string)$act['act_number']) ?>" required>
+        </div>
+        <div class="fg">
+          <label>Дата акта</label>
+          <input type="date" name="act_date" value="<?= Html::e((string)($act['act_date'] ?? '')) ?>">
+        </div>
+        <div class="fg">
+          <label>Сумма *</label>
+          <input type="number" name="amount" step="0.01" min="0.01" value="<?= Html::e((string)$act['amount']) ?>" required>
+        </div>
+        <div class="fg">
+          <label>Статус</label>
+          <select name="status">
+            <?php foreach (ActStatus::cases() as $as): ?>
+              <option value="<?= $as->value ?>" <?= $currentActStatus === $as ? 'selected' : '' ?>><?= $as->label() ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+        <div class="fg form-grid--full">
+          <label>Комментарий</label>
+          <textarea name="comment"><?= Html::e((string)($act['comment'] ?? '')) ?></textarea>
+        </div>
+      </div>
+      <div class="form-actions"><button type="submit" class="btn btn--ghost btn--sm">Сохранить акт</button></div>
     </form>
   <?php endforeach; ?>
 </div>

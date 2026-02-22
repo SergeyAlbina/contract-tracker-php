@@ -23,6 +23,12 @@
 | Add contract stage        |  ✅   |   ✅    |   ❌   |
 | Edit contract stage       |  ✅   |   ✅    |   ❌   |
 | Delete contract stage     |  ✅   |   ❌    |   ❌   |
+| Add invoice               |  ✅   |   ✅    |   ❌   |
+| Edit invoice              |  ✅   |   ✅    |   ❌   |
+| Delete invoice            |  ✅   |   ❌    |   ❌   |
+| Add act                   |  ✅   |   ✅    |   ❌   |
+| Edit act                  |  ✅   |   ✅    |   ❌   |
+| Delete act                |  ✅   |   ❌    |   ❌   |
 | Upload document           |  ✅   |   ✅    |   ❌   |
 | Download document         |  ✅   |   ✅    |   ✅   |
 | Delete document           |  ✅   |   ❌    |   ❌   |

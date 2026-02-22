@@ -159,6 +159,49 @@ CREATE TABLE IF NOT EXISTS `contract_stages` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
+-- ═══ CONTRACT INVOICES ══════════════════════════════
+CREATE TABLE IF NOT EXISTS `contract_invoices` (
+  `id`              INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `contract_id`     INT UNSIGNED NOT NULL,
+  `invoice_number`  VARCHAR(100) NOT NULL,
+  `invoice_date`    DATE         DEFAULT NULL,
+  `due_date`        DATE         DEFAULT NULL,
+  `amount`          DECIMAL(15,2) NOT NULL,
+  `status`          ENUM('issued','paid','cancelled') NOT NULL DEFAULT 'issued',
+  `comment`         TEXT         DEFAULT NULL,
+  `created_by`      INT UNSIGNED DEFAULT NULL,
+  `created_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`      DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_inv_contract` (`contract_id`),
+  KEY `idx_inv_status` (`status`),
+  KEY `idx_inv_due` (`due_date`),
+  CONSTRAINT `fk_inv_contract` FOREIGN KEY (`contract_id`) REFERENCES `contracts`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_inv_user` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+-- ═══ CONTRACT ACTS ══════════════════════════════════
+CREATE TABLE IF NOT EXISTS `contract_acts` (
+  `id`            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `contract_id`   INT UNSIGNED NOT NULL,
+  `act_number`    VARCHAR(100) NOT NULL,
+  `act_date`      DATE         DEFAULT NULL,
+  `amount`        DECIMAL(15,2) NOT NULL,
+  `status`        ENUM('pending','signed','rejected','cancelled') NOT NULL DEFAULT 'pending',
+  `comment`       TEXT         DEFAULT NULL,
+  `created_by`    INT UNSIGNED DEFAULT NULL,
+  `created_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`    DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_act_contract` (`contract_id`),
+  KEY `idx_act_status` (`status`),
+  KEY `idx_act_date` (`act_date`),
+  CONSTRAINT `fk_act_contract` FOREIGN KEY (`contract_id`) REFERENCES `contracts`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_act_user` FOREIGN KEY (`created_by`) REFERENCES `users`(`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- ═══ AUDIT LOG ═════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS `audit_log` (
   `id`           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

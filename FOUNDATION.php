@@ -200,7 +200,8 @@
  *   │       ├── Payments/          [✅ v1] CRUD, статусы, привязка к контрактам
  *   │       ├── Users/             [✅ v1.1] CRUD пользователей + смена пароля
  *   │       ├── Procurements/      [✅ v2.0] Закупки + коммерческие предложения (КП)
- *   │       └── Stages/            [✅ v2.0] Этапы контракта (plan/fact)
+ *   │       ├── Stages/            [✅ v2.0] Этапы контракта (plan/fact)
+ *   │       └── BillingDocs/       [✅ v2.0] Счета и акты
  *   │
  *   ├── templates/
  *   │   ├── layout.php            ← HTML5 layout: topbar, flash, stagger-animation
@@ -208,7 +209,7 @@
  *   │   ├── contracts/
  *   │   │   ├── list.php          ← Таблица + фильтры + пагинация
  *   │   │   ├── form.php          ← Создание/редактирование (НМЦК toggle)
- *   │   │   └── view.php          ← Карточка: финансы + этапы + платежи + документы
+ *   │   │   └── view.php          ← Карточка: финансы + этапы + счета + акты + платежи + документы
  *   │   └── errors/{404,500}.php
  *   │
  *   ├── database/schema.sql       ← DDL: все таблицы + FK + индексы + seed
@@ -223,7 +224,7 @@
  *   Charset: utf8mb4_unicode_ci
  *   Mode: STRICT_TRANS_TABLES, NO_ZERO_DATE, NO_ZERO_IN_DATE
  *
- *   ТЕКУЩИЕ ТАБЛИЦЫ (v1):
+ *   ТЕКУЩИЕ ТАБЛИЦЫ (v2.0):
  *
  *   users         id, login(UNIQUE), email, password_hash, full_name,
  *                 role(admin|manager|viewer), is_active, timestamps
@@ -247,11 +248,20 @@
  *                 planned_date, actual_date, sort_order, description,
  *                 created_by, timestamps
  *
+ *   contract_invoices
+ *                 id, contract_id→contracts(CASCADE), invoice_number,
+ *                 invoice_date, due_date, amount, status(issued|paid|cancelled),
+ *                 comment, created_by, timestamps
+ *
+ *   contract_acts id, contract_id→contracts(CASCADE), act_number,
+ *                 act_date, amount, status(pending|signed|rejected|cancelled),
+ *                 comment, created_by, timestamps
+ *
  *   audit_log     id(BIGINT), user_id, action, entity_type, entity_id,
  *                 details(JSON), ip_address, user_agent, created_at
  *
  *   ПЛАНИРУЕМЫЕ ТАБЛИЦЫ (v2+):
- *     acts, invoices, notifications, workload
+ *     notifications, workload
  *
  *
  * ╔══════════════════════════════════════════════════════════════════════════════════╗
@@ -279,6 +289,12 @@
  *   POST /contracts/{id}/stages          Добавить этап
  *   POST /stages/{id}/update             Обновить этап
  *   POST /stages/{id}/delete             Удалить этап
+ *   POST /contracts/{id}/invoices        Добавить счёт
+ *   POST /invoices/{id}/update           Обновить счёт
+ *   POST /invoices/{id}/delete           Удалить счёт
+ *   POST /contracts/{id}/acts            Добавить акт
+ *   POST /acts/{id}/update               Обновить акт
+ *   POST /acts/{id}/delete               Удалить акт
  *
  *   ПЛАН (v2+):
  *   GET  /procurements                   Закупки
@@ -419,7 +435,7 @@
  *   v2.0
  *     [✅] Procurements: закупки с КП
  *     [✅] Stages: этапы контракта (plan/fact)
- *     [ ] Invoices + Acts: счета и акты (следующий шаг)
+ *     [✅] Invoices + Acts: счета и акты
  *     [ ] Audit UI: просмотр лога (admin)
  *     [ ] Notifications: дедлайны, просрочки
  *     [ ] Export: XLSX, ZIP-пакет
@@ -442,8 +458,8 @@
  *
  *   Стек:        PHP 8.5+ · MySQL · HTML5 · CSS3 · ES6+ JavaScript
  *   Зависимости: 0 (ни Composer, ни npm, ни фреймворки)
- *   Модули:      7 изолированных (Auth, Contracts, Documents, Payments, Users, Procurements, Stages)
- *   Таблицы:     7 + audit_log
+ *   Модули:      8 изолированных (Auth, Contracts, Documents, Payments, Users, Procurements, Stages, BillingDocs)
+ *   Таблицы:     9 + audit_log
  *   Принцип:     один модуль падает → система работает
  *   Масштаб:     от 320px мобилки до 4K монитора
  *   Хостинг:     любой shared с PHP 8.5 и MySQL
