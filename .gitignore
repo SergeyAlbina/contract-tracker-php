@@ -1,11 +1,5 @@
-node_modules
-dist
-.next
-coverage
 .env
-.env.local
-storage
-tmp
-.DS_Store
-*.tsbuildinfo
-.claude/settings.local.json
+storage/*
+!storage/.gitkeep
+vendor/
+*.log

@@ -1,143 +1,63 @@
-# OPS_AND_SECURITY — эксплуатация, безопасность, бэкапы, деплой
+# Operations & Security
 
-Этот документ — практический чек‑лист, чтобы система была безопасной и переносимой:
-- бэкапы и восстановление (v1 local storage / v2 MinIO)
-- загрузка файлов (ограничения + скан в v2)
-- безопасный экспорт ZIP
-- логирование + traceId
-- healthchecks и readiness
-- reverse proxy + TLS + HSTS
-- миграции БД (Prisma discipline)
-- RBAC матрица доступа
+## Deployment (Shared Hosting)
 
----
-
-## 1) Бэкапы и восстановление (обязательно)
-
-### 1.1 Что бэкапим
-**v1 (Local disk):**
-- DB: MySQL dump
-- Files: директория `./storage`
-- Export cache: `./tmp/exports` (по желанию)
-
-**v2 (MinIO/S3):**
-- DB: MySQL dump
-- Files: MinIO bucket(ы) (`contracts` и т.п.)
-
-### 1.2 Частота (рекомендация)
-- DB dump: ежедневно (и + перед релизом/миграцией)
-- Files/storage: ежедневно/еженедельно (зависит от объёма)
-- Retention: 14–30 дней + monthly snapshot
-
-### 1.3 Минимальные команды (пример)
-**MySQL dump:**
-```bash
-mysqldump -h <host> -u <user> -p --single-transaction --routines --events contract_tracker > backups/db_$(date +%F).sql
+### Directory Layout
+```
+/home/user/
+  public_html/        ← DocumentRoot (= project's public/)
+    index.php
+    .htaccess
+    assets/
+  contract-tracker/   ← project root (NOT accessible from web)
+    src/
+    templates/
+    storage/
+    vendor/
+    .env
 ```
 
-**Архив storage (v1):**
-```bash
-tar -czf backups/storage_$(date +%F).tar.gz storage/
-```
+### Steps
+1. Upload project files above `public_html`
+2. Symlink or copy `public/` contents into `public_html/`
+3. Adjust `index.php` require path: `require_once __DIR__ . '/../contract-tracker/vendor/autoload.php';`
+4. Run `composer install --no-dev -o`
+5. Copy `.env.example` → `.env`, fill in credentials
+6. Import `database/schema.sql` via phpMyAdmin or CLI
+7. Set storage directory permissions: `chmod -R 750 storage/`
+8. **Change default admin password immediately!**
 
-**MinIO bucket export (v2):**
-- через `mc` (MinIO Client) или бэкап docker volume (если MinIO в compose)
+### .htaccess Security
+The included `.htaccess`:
+- Routes all requests through front controller
+- Blocks access to dotfiles (`.env`, `.git`)
+- Sets security headers (X-Content-Type-Options, X-Frame-Options)
 
-### 1.4 Проверка восстановления (важно)
-Раз в месяц делай тест:
-- поднять копию окружения
-- восстановить DB + storage
-- открыть UI и скачать любой документ
+### Storage Security
+- Files stored OUTSIDE public web root
+- Served only through DocumentsController (RBAC checked)
+- Filenames randomized (32-char hex)
+- PHP execution disabled in storage directory
+- Extensions whitelist enforced on upload
 
----
+## Session Security
+- `HttpOnly` — no JS access
+- `Secure` — HTTPS only (enable in .env)
+- `SameSite=Lax` — CSRF protection
+- ID regenerated every 5 minutes
 
-## 2) Upload документов (ограничения и безопасность)
+## Rate Limiting
+- Login: max 5 attempts per 5 min per IP (session-based)
+- For production: consider fail2ban or Cloudflare
 
-### 2.1 Ограничения v1
-- лимит размера: `UPLOAD_MAX_MB` (по умолчанию 50)
-- allowlist расширений (пример): `pdf, doc, docx, xls, xlsx, csv, zip, png, jpg`
-- allowlist MIME типов (проверять и расширение, и MIME)
-- нормализация имени файла (safe filename), запрет path traversal
+## Audit Log
+All mutations recorded in `audit_log` table:
+- user_id, action, entity_type, entity_id
+- IP address, timestamp
+- JSON details field for context
 
-### 2.2 Антивирус/скан в v2
-Рекомендуется интеграция с **ClamAV**:
-- upload -> временная папка -> scan -> только после OK сохраняем в storage
-- при отказе: удаляем временный файл + audit event
-
----
-
-## 3) Безопасный ZIP export
-
-### 3.1 Риски
-- Zip Slip: `../` в имени файла внутри архива может перезаписать файлы при распаковке
-- Вредоносные/сломанные имена файлов
-
-### 3.2 Обязательные правила
-- все пути внутри ZIP генерируются сервером (не доверять пользовательским путям)
-- запрет `..`, `:` и абсолютных путей
-- безопасная нормализация имени файла
-- ограничение размера итогового архива
-
----
-
-## 4) Логи + traceId
-
-### 4.1 Зачем
-- разбор инцидентов (ошибки API, Telegram, экспорты)
-- корреляция запросов
-
-### 4.2 Правила
-- генерируем `traceId` на каждый запрос (middleware)
-- добавляем `traceId` в ответ и в логи
-- логируем ошибки с контекстом (endpoint, userId, entityId)
-- запрещено логировать: токены, пароли, 2FA секреты, содержимое документов
-
----
-
-## 5) Healthchecks и readiness
-
-### 5.1 Endpoints
-- `GET /health` — liveness (API живо)
-- `GET /ready` — readiness (DB доступна, storage доступен, миграции применены)
-
-### 5.2 Docker / Proxy
-- docker healthcheck дергает `/health`
-- reverse proxy может использовать `/ready` для upstream
-
----
-
-## 6) Reverse proxy + TLS
-
-### 6.1 Рекомендация
-- Caddy или Nginx
-- HTTPS обязателен
-- HSTS включить (после проверки)
-
-### 6.2 Минимальные заголовки
-- HSTS
-- X-Content-Type-Options: nosniff
-- X-Frame-Options: DENY/SAMEORIGIN
-- Referrer-Policy
-- CSP (если нужно)
-
----
-
-## 7) Миграции БД (Prisma discipline)
-
-### 7.1 Правила
-- любые изменения схемы — только через миграции `prisma migrate`
-- “ручные” правки на проде запрещены
-- перед деплоем: бэкап DB
-- миграции прогоняются автоматически при деплое (или отдельным шагом)
-
-### 7.2 Процесс релиза (минимум)
-1) backup db + storage
-2) apply migrations
-3) deploy api/web
-4) smoke test (login + list contracts + download document)
-
----
-
-## 8) RBAC матрица (в одном месте)
-См. `docs/RBAC_MATRIX.md` — единый источник прав.
-Любое изменение прав → обновление матрицы.
+## Backups
+Recommended:
+- Daily DB dump: `mysqldump -u user -p dbname > backup_$(date +%F).sql`
+- Daily storage rsync: `rsync -a storage/ /backup/storage/`
+- Keep 30 days of rolling backups

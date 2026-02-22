@@ -1,56 +1,56 @@
-# ARCHITECTURE — Contract Lifecycle Tracker
+# Architecture — Contract Lifecycle Tracker
 
-## 1) Обзор
-Система для контроля жизненного цикла закупки и контракта (223/44):
-**Закупка → КП → Решение → Контракт → Этапы → Счета/Акты → Оплаты → Закрытие/Архив**.
+## Layers
 
-Цели архитектуры:
-- модульность (без монолитных файлов и копипаста)
-- безопасность по умолчанию (закрытый доступ, RBAC, аудит)
-- расширяемость (v1→v2: бухгалтерия/филиалы/2FA/MinIO/интеграции)
-- красивый и единый UI (Material You, responsive)
+```
+Request → Front Controller → Router → Middleware → Controller → Service → Repository → DB
+                                                       ↓
+                                                    Policy (validation)
+                                                       ↓
+                                                    DTO / Mapper
+```
 
----
+## Key Rules
 
-## 2) Компоненты
-### 2.1 Backend (NestJS)
-- REST API `/api/v1`
-- JWT auth + refresh
-- RBAC (ADMIN, HEAD_CS, SPECIALIST_CS)
+1. **Controller** — only HTTP: parse request, call service, return response
+2. **Service** — business logic, transactions, policies, notifications
+3. **Repository** — only SQL/PDO, no business rules
+4. **Policy** — law-specific validation (223-FZ / 44-FZ rules)
+5. **DTO** — typed data transfer between layers
 
-### 2.2 Frontend (Next.js + MUI)
-- AppShell (drawer/topbar), light/dark theme
-- responsive: desktop/tablet/mobile
+## DI Container
 
-### 2.3 Storage
-- v1: Local disk (`./storage`)
-- v2: MinIO (S3) via `STORAGE_DRIVER=s3`
+`App.php` acts as a lightweight DI container:
+- `$app->pdo()` — database connection
+- `$app->session()` — session manager
+- `$app->csrf()` — CSRF token manager
+- `$app->make(ClassName::class)` — lazy singleton factory
 
----
+## Module Structure
 
-## 3) Страницы UI (каркас)
-- Dashboard (KPI + тревоги)
-- Закупки (кейсы + КП + создать контракт)
-- Контракты (реестр + карточка с tabs)
-- Документы/Экспорт (ZIP/PDF/HTML)
+Each module in `src/Modules/<Name>/` contains:
+- `routes.php` — route definitions
+- `<Name>Controller.php` — HTTP handling
+- `<Name>Service.php` — business logic
+- `<Name>Repository.php` — database access
+- `Dto/` — data transfer objects (optional)
 
----
+## Request Lifecycle
 
-## 4) API (каркас)
-- Auth: login/refresh/logout/me
-- Procurements + Proposals: CRUD + create-contract
-- Contracts: CRUD + stages + invoices/acts/payments + finance
-- Documents: upload/download/list
-- Export: registry xlsx/csv, contract zip, passport html/pdf
+1. `public/index.php` boots `App`
+2. `.env` loaded → PDO created → Session started → CSRF initialized
+3. Module `routes.php` files auto-loaded
+4. Router matches URI → extracts params
+5. CSRF middleware checks POST requests
+6. Auth middleware checks session (unless route is `public`)
+7. Controller method invoked
+8. Response sent
 
----
+## Security Layers
 
-## 5) Диаграммы (текстом)
-### 5.1 Поток
-Procurement -> Proposals -> Decision -> Contract -> Stages -> Invoices/Acts/Payments -> Close
-
-### 5.2 Слои
-Controller -> Service -> Repo -> DB
-           -> StorageProvider
-           -> NotificationProvider
-           -> AuditService
+- Session: HttpOnly + Secure + SameSite cookies
+- CSRF: per-session token validated on all POST
+- Auth: session-based with periodic ID regeneration
+- Passwords: argon2id (bcrypt fallback)
+- Upload: whitelist + size limit + path traversal protection
+- Audit: all mutations logged with user/IP/timestamp

@@ -1,0 +1,18 @@
+{
+    "name": "erzss/contract-tracker",
+    "description": "Contract Lifecycle Tracker (223-FZ / 44-FZ) — PHP Shared Edition",
+    "type": "project",
+    "license": "proprietary",
+    "require": {
+        "php": ">=8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}

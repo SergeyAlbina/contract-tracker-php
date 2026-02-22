@@ -1,41 +1,41 @@
-# RBAC_MATRIX — матрица доступа (v1)
+# RBAC Matrix
 
-Роли v1:
-- **ADMIN** — техадмин/владелец системы
-- **HEAD_CS** — руководитель контрактной службы
-- **SPECIALIST_CS** — специалист контрактной службы
+## Roles
 
-Сущности:
-- Procurement (Закупка)
-- Commercial Proposal (КП)
-- Contract (Контракт)
-- Stage (Этап)
-- Invoice / Act / Payment
-- Documents
-- Export
-- Users
-- Settings/Policies (v2)
-- Audit log
+| Role      | Description                    |
+|-----------|--------------------------------|
+| `admin`   | Full access, user management   |
+| `manager` | CRUD contracts, payments, docs |
+| `viewer`  | Read-only access               |
 
-## Таблица прав (v1)
+## Permissions Matrix
 
-| Действие / Сущность | ADMIN | HEAD_CS | SPECIALIST_CS |
-|---|---:|---:|---:|
-| Просмотр Dashboard/рисков | ✅ | ✅ | ✅ |
-| CRUD Закупок | ✅ | ✅ | ✅ |
-| Принятие/отклонение КП | ✅ | ✅ | ✅ *(на своих закупках)* |
-| Создать контракт из закупки | ✅ | ✅ | ✅ *(на своих закупках)* |
-| CRUD Контрактов | ✅ | ✅ | ✅ *(на своих контрактах)* |
-| Назначать владельца контракта | ✅ | ✅ | ❌ |
-| CRUD Этапов | ✅ | ✅ | ✅ *(на своих контрактах)* |
-| CRUD Счетов/Актов/Оплат | ✅ | ✅ | ✅ *(на своих контрактах)* |
-| Загрузка/скачивание документов | ✅ | ✅ | ✅ *(на своих контрактах)* |
-| Экспорт реестра | ✅ | ✅ | ✅ |
-| Экспорт ZIP/PDF паспорта | ✅ | ✅ | ✅ *(на своих контрактах)* |
-| Управление пользователями | ✅ | ❌ | ❌ |
-| Просмотр Audit log | ✅ | ✅ | ✅ *(только свои события опционально)* |
+| Action                    | admin | manager | viewer |
+|---------------------------|:-----:|:-------:|:------:|
+| View contracts list       |  ✅   |   ✅    |   ✅   |
+| View contract details     |  ✅   |   ✅    |   ✅   |
+| Create contract           |  ✅   |   ✅    |   ❌   |
+| Edit contract             |  ✅   |   ✅    |   ❌   |
+| Delete contract           |  ✅   |   ❌    |   ❌   |
+| Add payment               |  ✅   |   ✅    |   ❌   |
+| Edit payment              |  ✅   |   ✅    |   ❌   |
+| Delete payment            |  ✅   |   ❌    |   ❌   |
+| Upload document           |  ✅   |   ✅    |   ❌   |
+| Download document         |  ✅   |   ✅    |   ✅   |
+| Delete document           |  ✅   |   ❌    |   ❌   |
+| View audit log            |  ✅   |   ❌    |   ❌   |
+| Manage users              |  ✅   |   ❌    |   ❌   |
+| Export data               |  ✅   |   ✅    |   ✅   |
 
-## Правило “свои контракты”
-- в v1 у контракта есть `ownerUserId`
-- SPECIALIST_CS по умолчанию может изменять только свои контракты
-- HEAD_CS видит и изменяет всё в пределах системы (v1)
+## Implementation
+
+RBAC is enforced at the **Service** layer via `Session::hasRole()`:
+
+```php
+if (!$this->app->session()->hasRole('admin', 'manager')) {
+    throw new ForbiddenException('Insufficient permissions');
+}
+```
+
+The `AuthMiddleware` blocks unauthenticated access.
+Role checks happen in services before mutations.
