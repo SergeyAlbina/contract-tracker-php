@@ -154,13 +154,47 @@ function infer_status(?string $resultRaw): ?string
     return null;
 }
 
+function extract_contract_ref_from_subject(?string $subjectRaw): ?string
+{
+    if ($subjectRaw === null || trim($subjectRaw) === '') {
+        return null;
+    }
+    $text = $subjectRaw;
+
+    if (preg_match('/\b(20\d{2}\.\d{5,})(?:\s+от\s+\d{2}\.\d{2}\.\d{2,4})?/u', $text, $m)) {
+        return trim($m[0]);
+    }
+
+    if (preg_match('/\bдоговор\s*№?\s*([A-Za-zА-Яа-я0-9.\-\/]{3,})/ui', $text, $m)) {
+        return 'договор № ' . trim($m[1]);
+    }
+
+    if (preg_match('/\bконтракт\s*№?\s*([A-Za-zА-Яа-я0-9.\-\/]{3,})/ui', $text, $m)) {
+        return 'контракт № ' . trim($m[1]);
+    }
+
+    return null;
+}
+
+function extract_date_from_text(?string $text): ?string
+{
+    if ($text === null || trim($text) === '') {
+        return null;
+    }
+    if (preg_match('/(\d{2}\.\d{2}\.\d{2,4})/', $text, $m)) {
+        return normalize_date($m[1]);
+    }
+    return null;
+}
+
 function infer_year(
     ?int $year,
     ?string $sourceSheet,
     ?string $taskDate,
     ?string $contractDate,
     ?string $contractNumber,
-    ?string $caseCode
+    ?string $caseCode,
+    ?string $subjectRaw
 ): ?int {
     if ($year !== null && $year >= 2000 && $year <= 2100) {
         return $year;
@@ -176,7 +210,7 @@ function infer_year(
         }
     }
 
-    foreach ([$contractNumber, $caseCode] as $text) {
+    foreach ([$contractNumber, $caseCode, $subjectRaw] as $text) {
         if ($text !== null && preg_match('/(20\d{2})/', $text, $m)) {
             return (int) $m[1];
         }
@@ -559,6 +593,18 @@ foreach ($rows as $index => $row) {
         'bundle_key' => limit_text(normalize_text($row['bundle_key'] ?? null), 255) ?? fallback_bundle_key($row),
     ];
 
+    if ($data['contract_number'] === null) {
+        $data['contract_number'] = limit_text(extract_contract_ref_from_subject($data['subject_raw']), 128);
+    }
+
+    if ($data['contract_ref_raw'] === null && $data['contract_number'] !== null) {
+        $data['contract_ref_raw'] = limit_text($data['contract_number'], 255);
+    }
+
+    if ($data['contract_date'] === null) {
+        $data['contract_date'] = extract_date_from_text($data['contract_number']);
+    }
+
     if ($data['reg_no'] === null) {
         $data['reg_no'] = normalize_int($row['source_row'] ?? null);
     }
@@ -570,6 +616,8 @@ foreach ($rows as $index => $row) {
         $data['contract_date'],
         $data['contract_number'],
         $data['case_code']
+        ,
+        $data['subject_raw']
     );
 
     if ($data['result_status'] === null) {
