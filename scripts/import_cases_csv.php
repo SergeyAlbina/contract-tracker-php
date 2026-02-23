@@ -45,14 +45,34 @@ function limit_text(?string $value, int $max): ?string
 
 function normalize_int(mixed $value): ?int
 {
+    if ($value === null || $value === '') {
+        return null;
+    }
+
+    if (is_int($value)) {
+        return $value;
+    }
+    if (is_float($value)) {
+        return (int) round($value);
+    }
+
     $text = normalize_text($value);
     if ($text === null) {
         return null;
     }
-    if (!preg_match('/^-?\d+$/', $text)) {
-        return null;
+    $text = str_replace(',', '.', $text);
+
+    if (preg_match('/^-?\d+$/', $text)) {
+        return (int) $text;
     }
-    return (int) $text;
+    if (is_numeric($text)) {
+        return (int) round((float) $text);
+    }
+
+    if (preg_match('/-?\d+/', $text, $m)) {
+        return (int) $m[0];
+    }
+    return null;
 }
 
 function normalize_decimal(mixed $value): ?float
@@ -132,6 +152,54 @@ function infer_status(?string $resultRaw): ?string
         return 'DONE';
     }
     return null;
+}
+
+function infer_year(
+    ?int $year,
+    ?string $sourceSheet,
+    ?string $taskDate,
+    ?string $contractDate,
+    ?string $contractNumber,
+    ?string $caseCode
+): ?int {
+    if ($year !== null && $year >= 2000 && $year <= 2100) {
+        return $year;
+    }
+
+    if ($sourceSheet !== null && preg_match('/(20\d{2})/', $sourceSheet, $m)) {
+        return (int) $m[1];
+    }
+
+    foreach ([$taskDate, $contractDate] as $date) {
+        if ($date !== null && preg_match('/^(20\d{2})-/', $date, $m)) {
+            return (int) $m[1];
+        }
+    }
+
+    foreach ([$contractNumber, $caseCode] as $text) {
+        if ($text !== null && preg_match('/(20\d{2})/', $text, $m)) {
+            return (int) $m[1];
+        }
+    }
+
+    return null;
+}
+
+function default_status_by_block(string $blockType): string
+{
+    switch ($blockType) {
+        case 'CONCLUDED':
+            return 'DONE';
+        case 'CLAIMS':
+            return 'IN_PROGRESS';
+        case 'TERMINATIONS':
+            return 'IN_PROGRESS';
+        case 'APPROVED_FZ':
+            return 'NEW';
+        case 'TASKS':
+        default:
+            return 'NEW';
+    }
 }
 
 function normalize_person_key(string $value): string
@@ -491,8 +559,21 @@ foreach ($rows as $index => $row) {
         'bundle_key' => limit_text(normalize_text($row['bundle_key'] ?? null), 255) ?? fallback_bundle_key($row),
     ];
 
-    if ($data['year'] === null && $data['task_date'] !== null) {
-        $data['year'] = (int) substr($data['task_date'], 0, 4);
+    if ($data['reg_no'] === null) {
+        $data['reg_no'] = normalize_int($row['source_row'] ?? null);
+    }
+
+    $data['year'] = infer_year(
+        $data['year'],
+        normalize_text($row['source_sheet'] ?? null),
+        $data['task_date'],
+        $data['contract_date'],
+        $data['contract_number'],
+        $data['case_code']
+    );
+
+    if ($data['result_status'] === null) {
+        $data['result_status'] = default_status_by_block($blockType);
     }
 
     $caseId = null;
