@@ -18,3 +18,4 @@ $router->post('/cases/{id:[0-9a-fA-F-]+}/attributes', [CasesController::class, '
 $router->post('/cases/{id:[0-9a-fA-F-]+}/events', [CasesController::class, 'addEvent'], ['roles' => ['admin', 'manager']]);
 $router->post('/cases/{id:[0-9a-fA-F-]+}/files', [CasesController::class, 'uploadFile'], ['roles' => ['admin', 'manager']]);
 $router->post('/cases/{id:[0-9a-fA-F-]+}/assignees', [CasesController::class, 'assign'], ['roles' => ['admin', 'manager']]);
+$router->post('/cases/{id:[0-9a-fA-F-]+}/delete', [CasesController::class, 'delete'], ['roles' => ['admin']]);

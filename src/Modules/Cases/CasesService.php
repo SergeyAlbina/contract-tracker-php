@@ -29,6 +29,7 @@ final class CasesService
 
         $res = $this->repo->paginate($page, $perPage, $filters);
         $blockCounts = $this->repo->countByBlock($filters);
+        $years = $this->repo->distinctYears($filters);
         $caseIds = array_map(static fn(array $row): string => (string) $row['id'], $res['items']);
 
         $attributes = $this->repo->attributesByCaseIds($caseIds);
@@ -51,6 +52,7 @@ final class CasesService
             'per_page' => $perPage,
             'pages' => $pages,
             'block_counts' => $blockCounts,
+            'years' => $years,
             'total_without_block' => (int) array_sum($blockCounts),
         ];
     }
@@ -257,6 +259,24 @@ final class CasesService
         }
 
         return ['success' => $updated > 0, 'updated' => $updated, 'errors' => $errors];
+    }
+
+    public function delete(string $caseId): bool
+    {
+        if (!$this->repo->findById($caseId)) {
+            return false;
+        }
+
+        foreach ($this->repo->filesByCaseId($caseId) as $file) {
+            $path = trim((string) ($file['file_path'] ?? ''));
+            if ($path !== '') {
+                $this->storage->delete($path);
+            }
+        }
+
+        $this->repo->delete($caseId);
+        $this->app->audit('case_deleted', 'case', null, ['case_id' => $caseId]);
+        return true;
     }
 
     /** @return array{0:array<string,mixed>,1:array<int,string>} */

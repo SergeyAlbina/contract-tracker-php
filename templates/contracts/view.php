@@ -15,9 +15,38 @@ try {
 try { $payments  = $app->make(\App\Modules\Payments\PaymentsService::class)->getByContract((int)$c['id']); } catch (\Throwable) {}
 try { $documents = $app->make(\App\Modules\Documents\DocumentsService::class)->getByContract((int)$c['id']); } catch (\Throwable) {}
 
+$stagesCount = count($stages);
+$invoicesCount = count($invoices);
+$actsCount = count($acts);
+$paymentsCount = count($payments);
+$documentsCount = count($documents);
+
 $law    = LawType::from($c['law_type']);
 $status = ContractStatus::from($c['status']);
 $canEdit = $session->hasRole('admin', 'manager');
+
+$notesForView = '';
+$rawNotes = trim((string) ($c['notes'] ?? ''));
+if ($rawNotes !== '') {
+  $cleanLines = [];
+  foreach (preg_split('/\R/u', $rawNotes) ?: [] as $line) {
+    $trimmed = trim((string) $line);
+    if ($trimmed === '') {
+      continue;
+    }
+    if (preg_match('/^Перенесено из дел:/ui', $trimmed)) {
+      continue;
+    }
+    if (preg_match('/^source_case_id=/ui', $trimmed)) {
+      continue;
+    }
+    if (preg_match('/^bundle=/ui', $trimmed)) {
+      continue;
+    }
+    $cleanLines[] = $trimmed;
+  }
+  $notesForView = implode(PHP_EOL, $cleanLines);
+}
 ?>
 
 <div class="page-head">
@@ -67,15 +96,16 @@ $canEdit = $session->hasRole('admin', 'manager');
     <div class="di"><div class="di__label">Подписан</div><div class="di__value"><?= Html::date($c['signed_at']) ?></div></div>
     <div class="di"><div class="di__label">Окончание</div><div class="di__value"><?= Html::date($c['expires_at']) ?></div></div>
     <div class="di"><div class="di__label">Создал</div><div class="di__value"><?= Html::e($c['creator_name'] ?? '—') ?></div></div>
-    <?php if ($c['notes']): ?>
-    <div class="di" style="grid-column:1/-1"><div class="di__label">Примечания</div><div class="di__value"><?= nl2br(Html::e($c['notes'])) ?></div></div>
+    <?php if ($notesForView !== ''): ?>
+    <div class="di" style="grid-column:1/-1"><div class="di__label">Примечания</div><div class="di__value"><?= nl2br(Html::e($notesForView)) ?></div></div>
     <?php endif; ?>
   </div>
 </div>
 
 <!-- ЭТАПЫ -->
-<h3 class="section-title">🧭 Этапы (<?= count($stages) ?>)</h3>
-
+<details class="section-fold" <?= $stagesCount > 0 ? 'open' : '' ?>>
+  <summary>Этапы <span class="section-fold__count">(<?= $stagesCount ?>)</span></summary>
+  <div class="section-fold__body">
 <?php if ($stages): ?>
 <div class="table-wrap">
   <table>
@@ -197,9 +227,13 @@ $canEdit = $session->hasRole('admin', 'manager');
 </div>
 <?php endif; ?>
 <?php endif; ?>
+  </div>
+</details>
 
 <!-- СЧЕТА -->
-<h3 class="section-title">🧾 Счета (<?= count($invoices) ?>)</h3>
+<details class="section-fold" <?= $invoicesCount > 0 ? 'open' : '' ?>>
+  <summary>Счета <span class="section-fold__count">(<?= $invoicesCount ?>)</span></summary>
+  <div class="section-fold__body">
 
 <?php if ($invoices): ?>
 <div class="table-wrap">
@@ -322,9 +356,13 @@ $canEdit = $session->hasRole('admin', 'manager');
 </div>
 <?php endif; ?>
 <?php endif; ?>
+  </div>
+</details>
 
 <!-- АКТЫ -->
-<h3 class="section-title">📑 Акты (<?= count($acts) ?>)</h3>
+<details class="section-fold" <?= $actsCount > 0 ? 'open' : '' ?>>
+  <summary>Акты <span class="section-fold__count">(<?= $actsCount ?>)</span></summary>
+  <div class="section-fold__body">
 
 <?php if ($acts): ?>
 <div class="table-wrap">
@@ -438,9 +476,13 @@ $canEdit = $session->hasRole('admin', 'manager');
 </div>
 <?php endif; ?>
 <?php endif; ?>
+  </div>
+</details>
 
 <!-- ПЛАТЕЖИ -->
-<h3 class="section-title">💳 Платежи (<?= count($payments) ?>)</h3>
+<details class="section-fold" <?= $paymentsCount > 0 ? 'open' : '' ?>>
+  <summary>Платежи <span class="section-fold__count">(<?= $paymentsCount ?>)</span></summary>
+  <div class="section-fold__body">
 
 <?php if ($payments): ?>
 <div class="table-wrap">
@@ -505,9 +547,13 @@ $canEdit = $session->hasRole('admin', 'manager');
   </form>
 </div>
 <?php endif; ?>
+  </div>
+</details>
 
 <!-- ДОКУМЕНТЫ -->
-<h3 class="section-title">📎 Документы (<?= count($documents) ?>)</h3>
+<details class="section-fold" <?= $documentsCount > 0 ? 'open' : '' ?>>
+  <summary>Документы <span class="section-fold__count">(<?= $documentsCount ?>)</span></summary>
+  <div class="section-fold__body">
 
 <?php if ($documents): ?>
 <div class="table-wrap">
@@ -560,6 +606,8 @@ $canEdit = $session->hasRole('admin', 'manager');
   </form>
 </div>
 <?php endif; ?>
+  </div>
+</details>
 
 <?php if ($canEdit && $session->hasRole('admin')): ?>
 <div style="margin-top:2rem;padding-top:1rem;border-top:1px solid var(--border)">

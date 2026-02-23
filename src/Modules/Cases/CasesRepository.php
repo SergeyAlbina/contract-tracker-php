@@ -80,6 +80,31 @@ final class CasesRepository
         return $result;
     }
 
+    /** @return array<int,int> */
+    public function distinctYears(array $filters): array
+    {
+        $filters['year'] = '';
+        [$where, $params] = $this->buildWhere($filters);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT DISTINCT c.year
+             FROM cases c
+             WHERE {$where} AND c.year IS NOT NULL
+             ORDER BY c.year DESC"
+        );
+        $stmt->execute($params);
+
+        $years = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $year = (int) ($row['year'] ?? 0);
+            if ($year > 0) {
+                $years[] = $year;
+            }
+        }
+
+        return $years;
+    }
+
     public function findById(string $id): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM cases WHERE id = :id LIMIT 1');
@@ -106,6 +131,12 @@ final class CasesRepository
         $data['_id'] = $id;
         $sql = 'UPDATE cases SET ' . implode(', ', $set) . ' WHERE id = :_id';
         $this->pdo->prepare($sql)->execute($data);
+    }
+
+    public function delete(string $id): void
+    {
+        $stmt = $this->pdo->prepare('DELETE FROM cases WHERE id = :id');
+        $stmt->execute(['id' => $id]);
     }
 
     public function findPrimaryCaseIdByBundle(string $bundleKey, ?string $excludeCaseId = null): ?string

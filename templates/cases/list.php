@@ -3,7 +3,7 @@ use App\Shared\Enum\CaseBlockType;
 use App\Shared\Enum\CaseResultStatus;
 use App\Shared\Utils\Html;
 
-/** @var array $items @var int $total @var int $page @var int $pages @var int $perPage @var array $filters @var array $users */
+/** @var array $items @var int $total @var int $page @var int $pages @var int $perPage @var array $filters @var array $users @var array<int,int> $years */
 /** @var array<CaseBlockType> $blockTypes @var array<CaseResultStatus> $statuses */
 /** @var array<string,int> $blockCounts @var int $totalWithoutBlock */
 
@@ -17,6 +17,7 @@ $queryBase = [
     'in_progress' => (int) ($filters['in_progress'] ?? 0),
     'per_page' => (int) ($filters['per_page'] ?? $perPage),
 ];
+$years = is_array($years ?? null) ? $years : [];
 
 $pageQuery = static function (int $targetPage) use ($queryBase): string {
     return http_build_query(array_merge($queryBase, ['page' => $targetPage]));
@@ -86,7 +87,13 @@ $allBlocksCount = isset($totalWithoutBlock) ? (int) $totalWithoutBlock : (int) a
       <?php endforeach; ?>
     </select>
 
-    <input type="number" min="2020" max="2100" name="year" placeholder="Год" value="<?= Html::e($queryBase['year']) ?>" style="width:100px">
+    <select name="year">
+      <option value="">Год</option>
+      <?php foreach ($years as $year): ?>
+        <?php $yearValue = (string) (int) $year; ?>
+        <option value="<?= Html::e($yearValue) ?>" <?= $queryBase['year'] === $yearValue ? 'selected' : '' ?>><?= Html::e($yearValue) ?></option>
+      <?php endforeach; ?>
+    </select>
 
     <select name="per_page">
       <?php foreach ([20, 50, 100, 200] as $pp): ?>
@@ -125,6 +132,7 @@ $allBlocksCount = isset($totalWithoutBlock) ? (int) $totalWithoutBlock : (int) a
   </div>
 <?php else: ?>
   <div class="table-tools">
+    <button type="button" class="btn btn--ghost btn--sm" data-table-reset="cases-registry">Сброс колонок</button>
     <details class="column-picker">
       <summary>Колонки таблицы</summary>
       <div class="column-picker__menu">
@@ -143,25 +151,25 @@ $allBlocksCount = isset($totalWithoutBlock) ? (int) $totalWithoutBlock : (int) a
   <div class="table-wrap">
     <table class="cases-table" data-table-id="cases-registry">
       <colgroup>
-        <col data-col-key="code" style="width:94px">
-        <col data-col-key="subject" style="width:390px">
-        <col data-col-key="block" style="width:96px">
-        <col data-col-key="year" style="width:64px">
-        <col data-col-key="status" style="width:108px">
-        <col data-col-key="assignees" style="width:170px">
-        <col data-col-key="contract" style="width:210px">
-        <col data-col-key="due" style="width:92px">
+        <col data-col-key="code" data-min-width="126" style="width:132px">
+        <col data-col-key="subject" data-min-width="320" style="width:430px">
+        <col data-col-key="block" data-min-width="168" style="width:176px">
+        <col data-col-key="year" data-min-width="84" style="width:88px">
+        <col data-col-key="status" data-min-width="126" style="width:132px">
+        <col data-col-key="assignees" data-min-width="180" style="width:206px">
+        <col data-col-key="contract" data-min-width="220" style="width:260px">
+        <col data-col-key="due" data-min-width="110" style="width:116px">
       </colgroup>
       <thead>
         <tr>
-          <th class="col-code" data-col-key="code">Код</th>
-          <th class="col-subject" data-col-key="subject">Предмет</th>
-          <th class="col-block" data-col-key="block">Блок</th>
-          <th class="col-year" data-col-key="year">Год</th>
-          <th class="col-status" data-col-key="status">Статус</th>
-          <th class="col-assignees" data-col-key="assignees">Исполнители</th>
-          <th class="col-contract" data-col-key="contract">Контракт</th>
-          <th class="col-due" data-col-key="due">Срок</th>
+          <th class="col-code" data-col-key="code" data-min-width="126">Код</th>
+          <th class="col-subject" data-col-key="subject" data-min-width="320">Предмет</th>
+          <th class="col-block" data-col-key="block" data-min-width="168">Блок</th>
+          <th class="col-year" data-col-key="year" data-min-width="84">Год</th>
+          <th class="col-status" data-col-key="status" data-min-width="126">Статус</th>
+          <th class="col-assignees" data-col-key="assignees" data-min-width="180">Исполнители</th>
+          <th class="col-contract" data-col-key="contract" data-min-width="220">Контракт</th>
+          <th class="col-due" data-col-key="due" data-min-width="110">Срок</th>
         </tr>
       </thead>
       <tbody>

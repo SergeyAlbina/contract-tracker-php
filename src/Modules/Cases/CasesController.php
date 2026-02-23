@@ -40,6 +40,7 @@ final class CasesController
             'pages' => $result['pages'],
             'perPage' => $result['per_page'],
             'filters' => $filters,
+            'years' => $result['years'] ?? [],
             'users' => $users,
             'blockTypes' => CaseBlockType::cases(),
             'statuses' => CaseResultStatus::cases(),
@@ -225,5 +226,16 @@ final class CasesController
         }
 
         return Response::json($result);
+    }
+
+    public function delete(Request $request): Response
+    {
+        $caseId = (string) $request->param('id', '');
+        $ok = $this->app->make(CasesService::class)->delete($caseId);
+
+        $ok ? $this->app->flash('success', 'Карточка дела удалена.')
+            : $this->app->flash('error', 'Не удалось удалить карточку дела.');
+
+        return Response::redirect('/cases/registry');
     }
 }

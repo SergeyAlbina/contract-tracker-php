@@ -254,5 +254,12 @@ $isAdmin = isset($session) && method_exists($session, 'hasRole') && $session->ha
         <?php endif; ?>
       </div>
     </details>
+
+    <div style="margin-top:1.25rem;padding-top:1rem;border-top:1px solid var(--border)">
+      <form method="post" action="/cases/<?= Html::e((string) $item['id']) ?>/delete">
+        <?= $csrf->field() ?>
+        <button type="submit" class="btn btn--danger btn--sm" data-confirm="Удалить карточку дела со всеми событиями и файлами?">🗑 Удалить карточку дела</button>
+      </form>
+    </div>
   <?php endif; ?>
 </div>

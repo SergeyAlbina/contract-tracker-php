@@ -35,7 +35,6 @@ $metrics = [
 
 foreach ($cases as $row) {
     $caseId = (string) $row['id'];
-    $marker = 'source_case_id=' . $caseId;
 
     $number = trim((string) ($row['contract_number'] ?? ''));
     if ($number === '') {
@@ -58,10 +57,6 @@ foreach ($cases as $row) {
     if ($existingNotes !== '') {
         $notesParts[] = $existingNotes;
     }
-    $notesParts[] = 'Перенесено из дел: CONCLUDED; ' . $marker;
-    if (trim((string) ($row['bundle_key'] ?? '')) !== '') {
-        $notesParts[] = 'bundle=' . trim((string) $row['bundle_key']);
-    }
     $notes = implode(PHP_EOL, $notesParts);
 
     $totalAmount = firstPositiveFloat([
@@ -79,15 +74,9 @@ foreach ($cases as $row) {
     $signedAt = normalizeDate($row['contract_date'] ?? null) ?? normalizeDate($row['task_date'] ?? null);
     $expiresAt = normalizeDate($row['due_date'] ?? null);
 
-    $existingStmt = $pdo->prepare('SELECT * FROM contracts WHERE notes LIKE :marker LIMIT 1');
-    $existingStmt->execute(['marker' => '%' . $marker . '%']);
+    $existingStmt = $pdo->prepare('SELECT * FROM contracts WHERE number = :number ORDER BY id ASC LIMIT 1');
+    $existingStmt->execute(['number' => $number]);
     $existing = $existingStmt->fetch(PDO::FETCH_ASSOC) ?: null;
-
-    if (!$existing) {
-        $existingStmt = $pdo->prepare('SELECT * FROM contracts WHERE number = :number ORDER BY id ASC LIMIT 1');
-        $existingStmt->execute(['number' => $number]);
-        $existing = $existingStmt->fetch(PDO::FETCH_ASSOC) ?: null;
-    }
 
     if (!$existing) {
         $payload = [
@@ -132,10 +121,8 @@ foreach ($cases as $row) {
         if (trim((string) ($existing['subject'] ?? '')) === '' && $subject !== '') {
             $update['subject'] = $subject;
         }
-        if (trim((string) ($existing['notes'] ?? '')) === '') {
+        if (trim((string) ($existing['notes'] ?? '')) === '' && $notes !== '') {
             $update['notes'] = $notes;
-        } elseif (!str_contains((string) $existing['notes'], $marker)) {
-            $update['notes'] = rtrim((string) $existing['notes']) . PHP_EOL . $marker;
         }
 
         if ($apply && $update !== []) {

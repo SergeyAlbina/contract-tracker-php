@@ -118,6 +118,12 @@ const storageSet = (key, value) => {
   } catch (e) {}
 };
 
+const storageRemove = (key) => {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {}
+};
+
 const initManagedTables = () => {
   document.querySelectorAll('table[data-table-id]').forEach((table) => {
     const tableId = table.dataset.tableId || '';
@@ -128,9 +134,19 @@ const initManagedTables = () => {
     const controls = document.querySelectorAll(
       `input[type="checkbox"][data-table-id="${tableId}"][data-table-column]`
     );
+    const resetButtons = document.querySelectorAll(`[data-table-reset="${tableId}"]`);
     const cols = Array.from(table.querySelectorAll('colgroup col[data-col-key]'));
+    const headers = Array.from(table.querySelectorAll('thead th[data-col-key]'));
     const storedVisibility = parseStoredObject(storageGet(visibilityKey));
     const storedWidths = parseStoredObject(storageGet(widthKey));
+
+    const minWidthFor = (columnKey) => {
+      const col = table.querySelector(`col[data-col-key="${columnKey}"]`);
+      const header = table.querySelector(`thead th[data-col-key="${columnKey}"]`);
+      const colMin = Number(col?.dataset.minWidth ?? 0);
+      const headerMin = Number(header?.dataset.minWidth ?? 0);
+      return Math.max(60, Number.isFinite(colMin) ? colMin : 0, Number.isFinite(headerMin) ? headerMin : 0);
+    };
 
     const setColumnVisible = (columnKey, visible) => {
       table.querySelectorAll(`[data-col-key="${columnKey}"]`).forEach((el) => {
@@ -155,15 +171,23 @@ const initManagedTables = () => {
       });
     });
 
+    resetButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        storageRemove(visibilityKey);
+        storageRemove(widthKey);
+        window.location.reload();
+      });
+    });
+
     cols.forEach((col) => {
       const key = col.dataset.colKey || '';
       const width = Number(storedWidths[key] ?? 0);
-      if (key && Number.isFinite(width) && width >= 60) {
-        col.style.width = `${Math.round(width)}px`;
+      const minWidth = minWidthFor(key);
+      if (key && Number.isFinite(width)) {
+        col.style.width = `${Math.max(minWidth, Math.round(width))}px`;
       }
     });
 
-    const headers = Array.from(table.querySelectorAll('thead th[data-col-key]'));
     headers.forEach((th) => {
       const key = th.dataset.colKey || '';
       if (!key) return;
@@ -182,15 +206,16 @@ const initManagedTables = () => {
 
         if (th.style.display === 'none') return;
 
+        const minWidth = minWidthFor(key);
         const startX = event.clientX;
-        const startWidth = Math.max(60, Math.round(th.getBoundingClientRect().width));
+        const startWidth = Math.max(minWidth, Math.round(th.getBoundingClientRect().width));
 
         th.classList.add('is-resizing');
         document.body.classList.add('is-col-resizing');
 
         const onMove = (moveEvent) => {
           const delta = moveEvent.clientX - startX;
-          const nextWidth = Math.max(60, Math.round(startWidth + delta));
+          const nextWidth = Math.max(minWidth, Math.round(startWidth + delta));
           col.style.width = `${nextWidth}px`;
         };
 
@@ -200,7 +225,7 @@ const initManagedTables = () => {
           th.classList.remove('is-resizing');
           document.body.classList.remove('is-col-resizing');
 
-          const width = Math.max(60, Math.round(col.getBoundingClientRect().width));
+          const width = Math.max(minWidth, Math.round(col.getBoundingClientRect().width));
           storedWidths[key] = width;
           storageSet(widthKey, JSON.stringify(storedWidths));
         };
