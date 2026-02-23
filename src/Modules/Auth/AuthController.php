@@ -9,11 +9,11 @@ final class AuthController
 {
     public function __construct(private readonly App $app) {}
 
-    public function home(Request $r): Response { return Response::redirect('/contracts'); }
+    public function home(Request $r): Response { return Response::redirect('/procurements'); }
 
     public function showLogin(Request $r): Response
     {
-        if ($this->app->session()->isAuthenticated()) return Response::redirect('/contracts');
+        if ($this->app->session()->isAuthenticated()) return Response::redirect('/procurements');
         return Response::html($this->app->renderView('auth/login', ['title' => 'Вход']));
     }
 
@@ -24,7 +24,7 @@ final class AuthController
         );
         if (!$result['success']) { $this->app->flash('error', $result['error']); return Response::redirect('/login'); }
         $this->app->flash('success', 'Добро пожаловать!');
-        return Response::redirect('/contracts');
+        return Response::redirect('/procurements');
     }
 
     public function logout(Request $r): Response

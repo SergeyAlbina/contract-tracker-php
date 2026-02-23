@@ -144,7 +144,7 @@ final class App
             if (!empty($meta['roles'])) {
                 if (!$this->session->hasRole(...$meta['roles'])) {
                     $this->flash('error', 'Недостаточно прав.');
-                    return Response::redirect('/contracts');
+                    return Response::redirect('/procurements');
                 }
             }
 

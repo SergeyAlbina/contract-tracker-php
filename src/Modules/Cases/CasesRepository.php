@@ -34,7 +34,7 @@ final class CasesRepository
                        END AS is_overdue,
                        (
                            SELECT GROUP_CONCAT(
-                               CONCAT(u.full_name, IF(ca.is_primary = 1, ' (primary)', ''))
+                               u.full_name
                                ORDER BY ca.is_primary DESC, ca.id ASC
                                SEPARATOR ', '
                            )

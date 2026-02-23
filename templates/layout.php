@@ -35,7 +35,7 @@
 <div class="shell">
 
   <header class="topbar" role="banner">
-    <a href="/contracts" class="topbar__brand">
+    <a href="/procurements" class="topbar__brand">
       <div class="topbar__brand-icon">
         <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
           <rect x="9" y="2" width="6" height="4" rx="1"></rect>
@@ -46,6 +46,14 @@
     </a>
 
     <nav class="topbar__nav" role="navigation">
+      <a href="/procurements" class="<?= str_starts_with($uriPath, '/procurements') ? 'active' : '' ?>">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="9" cy="20" r="1"></circle>
+          <circle cx="17" cy="20" r="1"></circle>
+          <path d="M3 4h2l2.4 10.4a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 7H7"></path>
+        </svg>
+        <span class="nav-text">Закупки</span>
+      </a>
       <a href="/contracts" class="<?= str_starts_with($uriPath, '/contracts') ? 'active' : '' ?>">
         <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -62,14 +70,6 @@
           <path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
         </svg>
         <span class="nav-text">Дела</span>
-      </a>
-      <a href="/procurements" class="<?= str_starts_with($uriPath, '/procurements') ? 'active' : '' ?>">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-          <circle cx="9" cy="20" r="1"></circle>
-          <circle cx="17" cy="20" r="1"></circle>
-          <path d="M3 4h2l2.4 10.4a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 7H7"></path>
-        </svg>
-        <span class="nav-text">Закупки</span>
       </a>
       <?php if (($user['role'] ?? '') === 'admin'): ?>
       <a href="/audit" class="<?= str_starts_with($uriPath, '/audit') ? 'active' : '' ?>">
