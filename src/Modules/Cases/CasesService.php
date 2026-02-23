@@ -28,6 +28,7 @@ final class CasesService
         $perPage = max(1, min(200, $perPage));
 
         $res = $this->repo->paginate($page, $perPage, $filters);
+        $blockCounts = $this->repo->countByBlock($filters);
         $caseIds = array_map(static fn(array $row): string => (string) $row['id'], $res['items']);
 
         $attributes = $this->repo->attributesByCaseIds($caseIds);
@@ -49,6 +50,8 @@ final class CasesService
             'page' => $page,
             'per_page' => $perPage,
             'pages' => $pages,
+            'block_counts' => $blockCounts,
+            'total_without_block' => (int) array_sum($blockCounts),
         ];
     }
 

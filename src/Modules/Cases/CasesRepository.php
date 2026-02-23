@@ -58,6 +58,28 @@ final class CasesRepository
         return ['items' => $stmt->fetchAll(), 'total' => $total];
     }
 
+    /** @return array<string,int> */
+    public function countByBlock(array $filters): array
+    {
+        $filters['block_type'] = '';
+        [$where, $params] = $this->buildWhere($filters);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT c.block_type, COUNT(*) AS cnt
+             FROM cases c
+             WHERE {$where}
+             GROUP BY c.block_type"
+        );
+        $stmt->execute($params);
+
+        $result = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $result[(string) $row['block_type']] = (int) $row['cnt'];
+        }
+
+        return $result;
+    }
+
     public function findById(string $id): ?array
     {
         $stmt = $this->pdo->prepare('SELECT * FROM cases WHERE id = :id LIMIT 1');

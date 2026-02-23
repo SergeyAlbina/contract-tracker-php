@@ -44,6 +44,8 @@ final class CasesController
             'users' => $users,
             'blockTypes' => CaseBlockType::cases(),
             'statuses' => CaseResultStatus::cases(),
+            'blockCounts' => $result['block_counts'] ?? [],
+            'totalWithoutBlock' => (int) ($result['total_without_block'] ?? $result['total']),
         ]);
     }
 
