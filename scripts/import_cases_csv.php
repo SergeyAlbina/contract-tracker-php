@@ -32,6 +32,17 @@ function normalize_text(mixed $value): ?string
     return $text === '' ? null : $text;
 }
 
+function limit_text(?string $value, int $max): ?string
+{
+    if ($value === null) {
+        return null;
+    }
+    if (function_exists('mb_substr')) {
+        return mb_substr($value, 0, $max);
+    }
+    return substr($value, 0, $max);
+}
+
 function normalize_int(mixed $value): ?int
 {
     $text = normalize_text($value);
@@ -414,7 +425,8 @@ $updateSql = 'UPDATE cases SET
     contract_ref_raw = :contract_ref_raw,
     contract_number = :contract_number,
     contract_date = :contract_date,
-    contract_amount = :contract_amount
+    contract_amount = :contract_amount,
+    bundle_key = :bundle_key
 WHERE id = :id';
 $updateCase = $pdo->prepare($updateSql);
 
@@ -456,27 +468,27 @@ foreach ($rows as $index => $row) {
         'block_type' => $blockType,
         'year' => normalize_int($row['year'] ?? null),
         'reg_no' => normalize_int($row['reg_no'] ?? null),
-        'case_code' => normalize_text($row['case_code'] ?? null),
+        'case_code' => limit_text(normalize_text($row['case_code'] ?? null), 64),
         'subject_raw' => $subjectRaw,
         'subject_clean' => normalize_text($row['subject_clean'] ?? null),
-        'budget_article' => normalize_text($row['budget_article'] ?? null),
-        'procurement_form' => normalize_text($row['procurement_form'] ?? null),
+        'budget_article' => limit_text(normalize_text($row['budget_article'] ?? null), 128),
+        'procurement_form' => limit_text(normalize_text($row['procurement_form'] ?? null), 64),
         'amount_planned' => normalize_decimal($row['amount_planned'] ?? null),
         'rnmc_amount' => normalize_decimal($row['rnmc_amount'] ?? null),
         'task_date' => normalize_date($row['task_date'] ?? null),
-        'stage_raw' => normalize_text($row['stage_raw'] ?? null),
+        'stage_raw' => limit_text(normalize_text($row['stage_raw'] ?? null), 255),
         'due_date' => normalize_date($row['due_date'] ?? null),
         'notes' => normalize_text($row['notes'] ?? null),
         'archive_path' => normalize_text($row['archive_path'] ?? null),
-        'result_raw' => normalize_text($row['result_raw'] ?? null),
+        'result_raw' => limit_text(normalize_text($row['result_raw'] ?? null), 255),
         'result_status' => $resultStatus !== '' ? $resultStatus : null,
         'result_amount' => normalize_decimal($row['result_amount'] ?? null),
         'result_percent' => normalize_percent($row['result_percent'] ?? null),
-        'contract_ref_raw' => normalize_text($row['contract_ref_raw'] ?? null),
-        'contract_number' => normalize_text($row['contract_number'] ?? null),
+        'contract_ref_raw' => limit_text(normalize_text($row['contract_ref_raw'] ?? null), 255),
+        'contract_number' => limit_text(normalize_text($row['contract_number'] ?? null), 128),
         'contract_date' => normalize_date($row['contract_date'] ?? null),
         'contract_amount' => normalize_decimal($row['contract_amount'] ?? null),
-        'bundle_key' => normalize_text($row['bundle_key'] ?? null) ?? fallback_bundle_key($row),
+        'bundle_key' => limit_text(normalize_text($row['bundle_key'] ?? null), 255) ?? fallback_bundle_key($row),
     ];
 
     if ($data['year'] === null && $data['task_date'] !== null) {
