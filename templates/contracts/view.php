@@ -26,6 +26,11 @@ $status = ContractStatus::from($c['status']);
 $canEdit = $session->hasRole('admin', 'manager');
 
 $notesForView = '';
+$eisRegistryNumber = '';
+$eisConcludedAt = '';
+$eisExecutionStart = '';
+$eisExecutionEnd = '';
+$eisPublishedAt = '';
 $rawNotes = trim((string) ($c['notes'] ?? ''));
 if ($rawNotes !== '') {
   $cleanLines = [];
@@ -43,9 +48,38 @@ if ($rawNotes !== '') {
     if (preg_match('/^bundle=/ui', $trimmed)) {
       continue;
     }
+    if (preg_match('/^\[ЕИС\]\s*Реестровый №:\s*(.+)$/u', $trimmed, $m)) {
+      $eisRegistryNumber = trim((string) ($m[1] ?? ''));
+      continue;
+    }
+    if (preg_match('/^\[ЕИС\]\s*Заключен:\s*(.+)$/u', $trimmed, $m)) {
+      $eisConcludedAt = trim((string) ($m[1] ?? ''));
+      continue;
+    }
+    if (preg_match('/^\[ЕИС\]\s*Размещено:\s*(.+)$/u', $trimmed, $m)) {
+      $eisPublishedAt = trim((string) ($m[1] ?? ''));
+      continue;
+    }
+    if (preg_match('/^\[ЕИС\]\s*Исполнение:\s*[cс]\s*(.*?)\s*по\s*(.*?)$/ui', $trimmed, $m)) {
+      $eisExecutionStart = trim((string) ($m[1] ?? ''));
+      $eisExecutionEnd = trim((string) ($m[2] ?? ''));
+      continue;
+    }
     $cleanLines[] = $trimmed;
   }
   $notesForView = implode(PHP_EOL, $cleanLines);
+}
+
+$concludedAt = $eisConcludedAt !== '' ? $eisConcludedAt : (string) ($c['signed_at'] ?? '');
+$executionStart = $eisExecutionStart !== '' ? $eisExecutionStart : (string) ($c['signed_at'] ?? '');
+$executionEnd = $eisExecutionEnd !== '' ? $eisExecutionEnd : (string) ($c['expires_at'] ?? '');
+$executionPeriod = '—';
+if ($executionStart !== '' && $executionEnd !== '') {
+  $executionPeriod = 'с ' . Html::date($executionStart) . ' по ' . Html::date($executionEnd);
+} elseif ($executionStart !== '') {
+  $executionPeriod = 'с ' . Html::date($executionStart);
+} elseif ($executionEnd !== '') {
+  $executionPeriod = 'по ' . Html::date($executionEnd);
 }
 ?>
 
@@ -93,8 +127,10 @@ if ($rawNotes !== '') {
     <div class="di"><div class="di__label">Предмет</div><div class="di__value"><?= Html::e($c['subject']) ?></div></div>
     <div class="di"><div class="di__label">Контрагент</div><div class="di__value"><?= Html::e($c['contractor_name']) ?></div></div>
     <div class="di"><div class="di__label">ИНН</div><div class="di__value"><?= Html::e($c['contractor_inn'] ?: '—') ?></div></div>
-    <div class="di"><div class="di__label">Подписан</div><div class="di__value"><?= Html::date($c['signed_at']) ?></div></div>
-    <div class="di"><div class="di__label">Окончание</div><div class="di__value"><?= Html::date($c['expires_at']) ?></div></div>
+    <div class="di"><div class="di__label">Реестровый №</div><div class="di__value"><?= Html::e($eisRegistryNumber !== '' ? $eisRegistryNumber : '—') ?></div></div>
+    <div class="di"><div class="di__label">Заключен</div><div class="di__value"><?= Html::date($concludedAt) ?></div></div>
+    <div class="di"><div class="di__label">Исполнение</div><div class="di__value"><?= Html::e($executionPeriod) ?></div></div>
+    <div class="di"><div class="di__label">Размещено</div><div class="di__value"><?= Html::date($eisPublishedAt) ?></div></div>
     <div class="di"><div class="di__label">Создал</div><div class="di__value"><?= Html::e($c['creator_name'] ?? '—') ?></div></div>
     <?php if ($notesForView !== ''): ?>
     <div class="di" style="grid-column:1/-1"><div class="di__label">Примечания</div><div class="di__value"><?= nl2br(Html::e($notesForView)) ?></div></div>
