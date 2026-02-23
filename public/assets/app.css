@@ -209,6 +209,80 @@ a:hover { color: var(--accent); }
   background: var(--bg-hover);
 }
 
+.topbar__admin {
+  position: relative;
+}
+
+.topbar__admin-toggle {
+  list-style: none;
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  color: var(--text-2);
+  font-size: .82rem;
+  font-weight: 500;
+  padding: .4rem .75rem;
+  border-radius: var(--r-sm);
+  transition: all var(--dur) var(--ease);
+  cursor: pointer;
+}
+
+.topbar__admin-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.topbar__admin-toggle:hover,
+.topbar__admin[open] .topbar__admin-toggle,
+.topbar__admin.is-active .topbar__admin-toggle {
+  color: var(--text-0);
+  background: var(--bg-hover);
+}
+
+.topbar__admin-toggle .ico {
+  margin-right: .35rem;
+  color: var(--accent-bright);
+}
+
+.topbar__admin-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + .35rem);
+  min-width: 220px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-md);
+  padding: .35rem;
+  display: grid;
+  gap: .2rem;
+  z-index: 140;
+}
+
+.topbar__admin:not([open]) .topbar__admin-menu {
+  display: none;
+}
+
+.topbar__admin-menu a {
+  display: inline-flex;
+  align-items: center;
+  gap: .45rem;
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--text-1);
+  padding: .45rem .55rem;
+  border-radius: var(--r-sm);
+}
+
+.topbar__admin-menu a .ico {
+  color: var(--accent-bright);
+}
+
+.topbar__admin-menu a:hover,
+.topbar__admin-menu a.active {
+  color: var(--text-0);
+  background: var(--bg-hover);
+}
+
 .topbar__user {
   display: flex;
   align-items: center;
@@ -837,6 +911,8 @@ tr:hover td { background: var(--bg-hover); }
 @media (max-width: 768px) {
   .topbar { padding: .55rem 1rem; }
   .topbar__nav a span.nav-text { display: none; }
+  .topbar__admin-toggle span.nav-text { display: none; }
+  .topbar__admin-menu { left: 0; right: auto; min-width: 180px; }
   .finance-row { grid-template-columns: 1fr 1fr; }
   .form-grid { grid-template-columns: 1fr; }
   .theme-toggle { min-width: auto; }

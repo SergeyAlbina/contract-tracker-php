@@ -31,6 +31,8 @@
   $failed = $app->failedModules();
   $uriPath = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');
   $roleLabels = ['admin' => 'Администратор', 'manager' => 'Менеджер', 'viewer' => 'Наблюдатель'];
+  $isAdmin = (($user['role'] ?? '') === 'admin');
+  $adminMenuActive = str_starts_with($uriPath, '/audit') || str_starts_with($uriPath, '/users');
 ?>
 <div class="shell">
 
@@ -71,25 +73,36 @@
         </svg>
         <span class="nav-text">Дела</span>
       </a>
-      <?php if (($user['role'] ?? '') === 'admin'): ?>
-      <a href="/audit" class="<?= str_starts_with($uriPath, '/audit') ? 'active' : '' ?>">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 3h16v18l-3-2-3 2-2-2-2 2-3-2-3 2z"></path>
-          <path d="M8 7h8"></path>
-          <path d="M8 11h8"></path>
-          <path d="M8 15h5"></path>
-        </svg>
-        <span class="nav-text">Аудит</span>
-      </a>
-      <a href="/users" class="<?= str_starts_with($uriPath, '/users') ? 'active' : '' ?>">
-        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-          <circle cx="9" cy="7" r="4"></circle>
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-          <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-        </svg>
-        <span class="nav-text">Пользователи</span>
-      </a>
+      <?php if ($isAdmin): ?>
+      <details class="topbar__admin <?= $adminMenuActive ? 'is-active' : '' ?>">
+        <summary class="topbar__admin-toggle">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.8 1.8 0 1 1-2.5 2.5l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V20a1.8 1.8 0 1 1-3.6 0v-.1a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1.8 1.8 0 1 1-2.5-2.5l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H4a1.8 1.8 0 1 1 0-3.6h.1a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1.8 1.8 0 1 1 2.5-2.5l.1.1a1 1 0 0 0 1.1.2h.1a1 1 0 0 0 .6-.9V4a1.8 1.8 0 1 1 3.6 0v.1a1 1 0 0 0 .6.9h.1a1 1 0 0 0 1.1-.2l.1-.1a1.8 1.8 0 1 1 2.5 2.5l-.1.1a1 1 0 0 0-.2 1.1v.1a1 1 0 0 0 .9.6H20a1.8 1.8 0 1 1 0 3.6h-.1a1 1 0 0 0-.9.6z"></path>
+          </svg>
+          <span class="nav-text">Администрирование</span>
+        </summary>
+        <div class="topbar__admin-menu">
+          <a href="/audit" class="<?= str_starts_with($uriPath, '/audit') ? 'active' : '' ?>">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 3h16v18l-3-2-3 2-2-2-2 2-3-2-3 2z"></path>
+              <path d="M8 7h8"></path>
+              <path d="M8 11h8"></path>
+              <path d="M8 15h5"></path>
+            </svg>
+            <span>Аудит</span>
+          </a>
+          <a href="/users" class="<?= str_starts_with($uriPath, '/users') ? 'active' : '' ?>">
+            <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span>Пользователи</span>
+          </a>
+        </div>
+      </details>
       <?php endif; ?>
     </nav>
 
