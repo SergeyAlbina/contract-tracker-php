@@ -92,3 +92,124 @@ document.querySelectorAll('.upload-zone').forEach(zone => {
 
 // ── Smooth page transition (CSS class) ──
 document.documentElement.classList.add('loaded');
+
+// ── Table columns: visibility + manual resize ──
+const parseStoredObject = (raw) => {
+  if (!raw) return {};
+  try {
+    const value = JSON.parse(raw);
+    return value && typeof value === 'object' ? value : {};
+  } catch (e) {
+    return {};
+  }
+};
+
+const storageGet = (key) => {
+  try {
+    return localStorage.getItem(key);
+  } catch (e) {
+    return null;
+  }
+};
+
+const storageSet = (key, value) => {
+  try {
+    localStorage.setItem(key, value);
+  } catch (e) {}
+};
+
+const initManagedTables = () => {
+  document.querySelectorAll('table[data-table-id]').forEach((table) => {
+    const tableId = table.dataset.tableId || '';
+    if (!tableId) return;
+
+    const visibilityKey = `table:${tableId}:visibility`;
+    const widthKey = `table:${tableId}:widths`;
+    const controls = document.querySelectorAll(
+      `input[type="checkbox"][data-table-id="${tableId}"][data-table-column]`
+    );
+    const cols = Array.from(table.querySelectorAll('colgroup col[data-col-key]'));
+    const storedVisibility = parseStoredObject(storageGet(visibilityKey));
+    const storedWidths = parseStoredObject(storageGet(widthKey));
+
+    const setColumnVisible = (columnKey, visible) => {
+      table.querySelectorAll(`[data-col-key="${columnKey}"]`).forEach((el) => {
+        el.style.display = visible ? '' : 'none';
+      });
+      table.querySelectorAll(`col[data-col-key="${columnKey}"]`).forEach((el) => {
+        el.style.display = visible ? '' : 'none';
+      });
+    };
+
+    controls.forEach((checkbox) => {
+      const key = checkbox.dataset.tableColumn || '';
+      if (!key) return;
+      const visible = storedVisibility[key] !== false;
+      checkbox.checked = visible;
+      setColumnVisible(key, visible);
+
+      checkbox.addEventListener('change', () => {
+        storedVisibility[key] = checkbox.checked;
+        setColumnVisible(key, checkbox.checked);
+        storageSet(visibilityKey, JSON.stringify(storedVisibility));
+      });
+    });
+
+    cols.forEach((col) => {
+      const key = col.dataset.colKey || '';
+      const width = Number(storedWidths[key] ?? 0);
+      if (key && Number.isFinite(width) && width >= 60) {
+        col.style.width = `${Math.round(width)}px`;
+      }
+    });
+
+    const headers = Array.from(table.querySelectorAll('thead th[data-col-key]'));
+    headers.forEach((th) => {
+      const key = th.dataset.colKey || '';
+      if (!key) return;
+
+      const col = table.querySelector(`col[data-col-key="${key}"]`);
+      if (!col) return;
+
+      const handle = document.createElement('span');
+      handle.className = 'col-resizer';
+      handle.setAttribute('aria-hidden', 'true');
+      th.append(handle);
+
+      handle.addEventListener('mousedown', (event) => {
+        if (event.button !== 0) return;
+        event.preventDefault();
+
+        if (th.style.display === 'none') return;
+
+        const startX = event.clientX;
+        const startWidth = Math.max(60, Math.round(th.getBoundingClientRect().width));
+
+        th.classList.add('is-resizing');
+        document.body.classList.add('is-col-resizing');
+
+        const onMove = (moveEvent) => {
+          const delta = moveEvent.clientX - startX;
+          const nextWidth = Math.max(60, Math.round(startWidth + delta));
+          col.style.width = `${nextWidth}px`;
+        };
+
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          th.classList.remove('is-resizing');
+          document.body.classList.remove('is-col-resizing');
+
+          const width = Math.max(60, Math.round(col.getBoundingClientRect().width));
+          storedWidths[key] = width;
+          storageSet(widthKey, JSON.stringify(storedWidths));
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+    });
+  });
+};
+
+initManagedTables();

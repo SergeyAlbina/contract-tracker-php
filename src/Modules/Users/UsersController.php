@@ -132,6 +132,7 @@ final class UsersController
         }
 
         $this->app->flash('success', 'Пароль успешно изменён.');
-        return Response::redirect('/contracts');
+        $redirectTo = $this->app->session()->hasRole('admin') ? '/admin' : '/contracts';
+        return Response::redirect($redirectTo);
     }
 }

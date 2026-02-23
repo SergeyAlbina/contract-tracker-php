@@ -316,6 +316,8 @@ final class CasesRepository
         if (!empty($filters['block_type'])) {
             $where[] = 'c.block_type = :block_type';
             $params['block_type'] = (string) $filters['block_type'];
+        } else {
+            $where[] = "c.block_type <> 'CONCLUDED'";
         }
 
         if (!empty($filters['year'])) {

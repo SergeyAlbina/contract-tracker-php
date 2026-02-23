@@ -13,7 +13,6 @@ $queryBase = [
     'result_status' => (string) ($filters['result_status'] ?? ''),
     'assignee' => (string) ($filters['assignee'] ?? ''),
     'q' => (string) ($filters['q'] ?? ''),
-    'show_duplicates' => (int) ($filters['show_duplicates'] ?? 0),
     'overdue' => (int) ($filters['overdue'] ?? 0),
     'in_progress' => (int) ($filters['in_progress'] ?? 0),
     'per_page' => (int) ($filters['per_page'] ?? $perPage),
@@ -28,6 +27,10 @@ $tabHref = static function (string $blockType) use ($tabsQueryBase): string {
     $query = array_merge($tabsQueryBase, ['block_type' => $blockType]);
     return '/cases/registry?' . http_build_query($query);
 };
+$visibleBlockTypes = array_values(array_filter(
+    $blockTypes,
+    static fn(CaseBlockType $block): bool => $block !== CaseBlockType::CONCLUDED
+));
 $allBlocksCount = isset($totalWithoutBlock) ? (int) $totalWithoutBlock : (int) array_sum($blockCounts ?? []);
 ?>
 
@@ -46,7 +49,7 @@ $allBlocksCount = isset($totalWithoutBlock) ? (int) $totalWithoutBlock : (int) a
     Все
     <span class="cases-tab__count"><?= $allBlocksCount ?></span>
   </a>
-  <?php foreach ($blockTypes as $block): ?>
+  <?php foreach ($visibleBlockTypes as $block): ?>
     <?php
       $value = $block->value;
       $count = (int) ($blockCounts[$value] ?? 0);
@@ -105,11 +108,6 @@ $allBlocksCount = isset($totalWithoutBlock) ? (int) $totalWithoutBlock : (int) a
       <span class="text-muted">В работе</span>
     </label>
 
-    <label class="cases-check">
-      <input type="checkbox" name="show_duplicates" value="1" <?= ((int) $queryBase['show_duplicates'] === 1) ? 'checked' : '' ?>>
-      <span class="text-muted">Показывать дубли</span>
-    </label>
-
     <button type="submit" class="btn btn--ghost btn--sm">Найти</button>
     <a href="/cases/registry" class="btn btn--ghost btn--sm">Сброс</a>
   </div>
@@ -126,28 +124,44 @@ $allBlocksCount = isset($totalWithoutBlock) ? (int) $totalWithoutBlock : (int) a
     <p>Записей не найдено</p>
   </div>
 <?php else: ?>
+  <div class="table-tools">
+    <details class="column-picker">
+      <summary>Колонки таблицы</summary>
+      <div class="column-picker__menu">
+        <label><input type="checkbox" data-table-id="cases-registry" data-table-column="code" checked> Код</label>
+        <label><input type="checkbox" data-table-id="cases-registry" data-table-column="subject" checked> Предмет</label>
+        <label><input type="checkbox" data-table-id="cases-registry" data-table-column="block" checked> Блок</label>
+        <label><input type="checkbox" data-table-id="cases-registry" data-table-column="year" checked> Год</label>
+        <label><input type="checkbox" data-table-id="cases-registry" data-table-column="status" checked> Статус</label>
+        <label><input type="checkbox" data-table-id="cases-registry" data-table-column="assignees" checked> Исполнители</label>
+        <label><input type="checkbox" data-table-id="cases-registry" data-table-column="contract" checked> Контракт</label>
+        <label><input type="checkbox" data-table-id="cases-registry" data-table-column="due" checked> Срок</label>
+      </div>
+    </details>
+  </div>
+
   <div class="table-wrap">
-    <table class="cases-table">
+    <table class="cases-table" data-table-id="cases-registry">
       <colgroup>
-        <col style="width:94px">
-        <col style="width:390px">
-        <col style="width:96px">
-        <col style="width:64px">
-        <col style="width:108px">
-        <col style="width:170px">
-        <col style="width:210px">
-        <col style="width:92px">
+        <col data-col-key="code" style="width:94px">
+        <col data-col-key="subject" style="width:390px">
+        <col data-col-key="block" style="width:96px">
+        <col data-col-key="year" style="width:64px">
+        <col data-col-key="status" style="width:108px">
+        <col data-col-key="assignees" style="width:170px">
+        <col data-col-key="contract" style="width:210px">
+        <col data-col-key="due" style="width:92px">
       </colgroup>
       <thead>
         <tr>
-          <th class="col-code">Код</th>
-          <th class="col-subject">Предмет</th>
-          <th class="col-block">Блок</th>
-          <th class="col-year">Год</th>
-          <th class="col-status">Статус</th>
-          <th class="col-assignees">Исполнители</th>
-          <th class="col-contract">Контракт</th>
-          <th class="col-due">Срок</th>
+          <th class="col-code" data-col-key="code">Код</th>
+          <th class="col-subject" data-col-key="subject">Предмет</th>
+          <th class="col-block" data-col-key="block">Блок</th>
+          <th class="col-year" data-col-key="year">Год</th>
+          <th class="col-status" data-col-key="status">Статус</th>
+          <th class="col-assignees" data-col-key="assignees">Исполнители</th>
+          <th class="col-contract" data-col-key="contract">Контракт</th>
+          <th class="col-due" data-col-key="due">Срок</th>
         </tr>
       </thead>
       <tbody>
@@ -164,28 +178,28 @@ $allBlocksCount = isset($totalWithoutBlock) ? (int) $totalWithoutBlock : (int) a
           $assignees = (string) ($row['assignees'] ?? '');
         ?>
         <tr>
-          <td class="td-link col-code">
+          <td class="td-link col-code" data-col-key="code">
             <a href="/cases/registry/<?= Html::e((string) $row['id']) ?>"><?= Html::e($code) ?></a>
           </td>
-          <td class="col-subject"><?= Html::e(Html::truncate($subject, 85)) ?></td>
-          <td class="col-block">
+          <td class="col-subject" data-col-key="subject"><?= Html::e(Html::truncate($subject, 85)) ?></td>
+          <td class="col-block" data-col-key="block">
             <?php if ($block): ?>
               <?= Html::badge($block->value, $block->label()) ?>
             <?php else: ?>
               <span class="text-muted">—</span>
             <?php endif; ?>
           </td>
-          <td class="td-num col-year"><?= Html::e((string) ($row['year'] ?? '—')) ?></td>
-          <td class="col-status">
+          <td class="td-num col-year" data-col-key="year"><?= Html::e((string) ($row['year'] ?? '—')) ?></td>
+          <td class="col-status" data-col-key="status">
             <?php if ($status): ?>
               <?= Html::badge($status->value, $status->label()) ?>
             <?php else: ?>
               <span class="text-muted">—</span>
             <?php endif; ?>
           </td>
-          <td class="col-assignees"><?= Html::e($assignees !== '' ? Html::truncate($assignees, 45) : '—') ?></td>
-          <td class="col-contract"><?= Html::e($contractNumber !== '' ? Html::truncate($contractNumber, 40) : '—') ?></td>
-          <td class="col-due <?= $isOverdue ? 'text-rose' : 'text-muted' ?>">
+          <td class="col-assignees" data-col-key="assignees"><?= Html::e($assignees !== '' ? Html::truncate($assignees, 45) : '—') ?></td>
+          <td class="col-contract" data-col-key="contract"><?= Html::e($contractNumber !== '' ? Html::truncate($contractNumber, 40) : '—') ?></td>
+          <td class="col-due <?= $isOverdue ? 'text-rose' : 'text-muted' ?>" data-col-key="due">
             <?= Html::date($due) ?>
           </td>
         </tr>

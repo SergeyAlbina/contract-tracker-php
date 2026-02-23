@@ -11,8 +11,19 @@ $roleLabels = [
 ?>
 
 <div class="page-head">
-  <h1>👥 Пользователи <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= count($items) ?>)</span></h1>
-  <a href="/users/new" class="btn btn--primary">+ Новый пользователь</a>
+  <h1>
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+    </svg>
+    Пользователи <span class="page-head__count">(<?= count($items) ?>)</span>
+  </h1>
+  <div class="flex gap-sm">
+    <a href="/profile/password" class="btn btn--ghost btn--sm">Сменить мой пароль</a>
+    <a href="/users/new" class="btn btn--primary">+ Новый пользователь</a>
+  </div>
 </div>
 
 <?php if (empty($items)): ?>
