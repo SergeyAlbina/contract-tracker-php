@@ -36,13 +36,13 @@ $pageQuery = static function (int $targetPage) use ($queryBase): string {
   </div>
 </div>
 
-<form class="filters" method="get" action="/cases/registry">
+<form class="filters filters--cases" method="get" action="/cases/registry">
   <input
     type="text"
     name="q"
     placeholder="Поиск: код, предмет, номер контракта…"
     value="<?= Html::e($queryBase['q']) ?>"
-    style="flex:1;min-width:220px"
+    style="flex:1"
   >
 
   <select name="block_type">
@@ -101,17 +101,27 @@ $pageQuery = static function (int $targetPage) use ($queryBase): string {
   </div>
 <?php else: ?>
   <div class="table-wrap">
-    <table>
+    <table class="cases-table">
+      <colgroup>
+        <col style="width:94px">
+        <col style="width:390px">
+        <col style="width:96px">
+        <col style="width:64px">
+        <col style="width:108px">
+        <col style="width:170px">
+        <col style="width:210px">
+        <col style="width:92px">
+      </colgroup>
       <thead>
         <tr>
-          <th>Код</th>
-          <th>Предмет</th>
-          <th>Блок</th>
-          <th>Год</th>
-          <th>Статус</th>
-          <th>Исполнители</th>
-          <th>Контракт</th>
-          <th>Срок</th>
+          <th class="col-code">Код</th>
+          <th class="col-subject">Предмет</th>
+          <th class="col-block">Блок</th>
+          <th class="col-year">Год</th>
+          <th class="col-status">Статус</th>
+          <th class="col-assignees">Исполнители</th>
+          <th class="col-contract">Контракт</th>
+          <th class="col-due">Срок</th>
         </tr>
       </thead>
       <tbody>
@@ -128,28 +138,28 @@ $pageQuery = static function (int $targetPage) use ($queryBase): string {
           $assignees = (string) ($row['assignees'] ?? '');
         ?>
         <tr>
-          <td class="td-link">
+          <td class="td-link col-code">
             <a href="/cases/registry/<?= Html::e((string) $row['id']) ?>"><?= Html::e($code) ?></a>
           </td>
-          <td><?= Html::e(Html::truncate($subject, 85)) ?></td>
-          <td>
+          <td class="col-subject"><?= Html::e(Html::truncate($subject, 85)) ?></td>
+          <td class="col-block">
             <?php if ($block): ?>
               <?= Html::badge($block->value, $block->label()) ?>
             <?php else: ?>
               <span class="text-muted">—</span>
             <?php endif; ?>
           </td>
-          <td class="td-num"><?= Html::e((string) ($row['year'] ?? '—')) ?></td>
-          <td>
+          <td class="td-num col-year"><?= Html::e((string) ($row['year'] ?? '—')) ?></td>
+          <td class="col-status">
             <?php if ($status): ?>
               <?= Html::badge($status->value, $status->label()) ?>
             <?php else: ?>
               <span class="text-muted">—</span>
             <?php endif; ?>
           </td>
-          <td><?= Html::e($assignees !== '' ? Html::truncate($assignees, 45) : '—') ?></td>
-          <td><?= Html::e($contractNumber !== '' ? Html::truncate($contractNumber, 40) : '—') ?></td>
-          <td class="<?= $isOverdue ? 'text-rose' : 'text-muted' ?>">
+          <td class="col-assignees"><?= Html::e($assignees !== '' ? Html::truncate($assignees, 45) : '—') ?></td>
+          <td class="col-contract"><?= Html::e($contractNumber !== '' ? Html::truncate($contractNumber, 40) : '—') ?></td>
+          <td class="col-due <?= $isOverdue ? 'text-rose' : 'text-muted' ?>">
             <?= Html::date($due) ?>
           </td>
         </tr>

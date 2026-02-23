@@ -233,7 +233,7 @@ a:hover { color: var(--accent); }
 .main {
   padding: clamp(1rem, 3vw, 2rem);
   width: 100%;
-  max-width: 1280px;
+  max-width: 1440px;
   margin: 0 auto;
 }
 
@@ -432,6 +432,44 @@ tr:hover td { background: var(--bg-hover); }
 
 .td-num { font-family: var(--f-mono); font-size: .82rem; }
 .td-link { font-weight: 600; }
+
+.filters--cases {
+  gap: .45rem;
+}
+
+.filters--cases select,
+.filters--cases input {
+  min-width: 128px;
+}
+
+.filters--cases input[name='q'] {
+  flex: 1 1 300px;
+  min-width: 260px;
+}
+
+.filters--cases label {
+  white-space: nowrap;
+}
+
+.cases-table {
+  min-width: 1240px;
+  table-layout: fixed;
+}
+
+.cases-table th,
+.cases-table td {
+  white-space: nowrap;
+}
+
+.cases-table .col-subject {
+  white-space: normal;
+}
+
+.cases-table .col-assignees,
+.cases-table .col-contract {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 .audit-action {
   font-family: var(--f-mono);
