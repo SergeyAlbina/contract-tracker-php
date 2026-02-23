@@ -202,6 +202,107 @@ CREATE TABLE IF NOT EXISTS `contract_acts` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
+-- ═══ CASES REGISTRY (единый реестр дел) ═════════════
+CREATE TABLE IF NOT EXISTS `cases` (
+  `id`                   CHAR(36) NOT NULL,
+  `block_type`           ENUM('TASKS','TERMINATIONS','CLAIMS','CONCLUDED','APPROVED_FZ') NOT NULL,
+  `year`                 SMALLINT DEFAULT NULL,
+  `reg_no`               INT DEFAULT NULL,
+  `case_code`            VARCHAR(64) DEFAULT NULL,
+  `subject_raw`          TEXT NOT NULL,
+  `subject_clean`        TEXT DEFAULT NULL,
+  `budget_article`       VARCHAR(128) DEFAULT NULL,
+  `procurement_form`     VARCHAR(64) DEFAULT NULL,
+  `amount_planned`       DECIMAL(15,2) DEFAULT NULL,
+  `rnmc_amount`          DECIMAL(15,2) DEFAULT NULL,
+  `task_date`            DATE DEFAULT NULL,
+  `stage_raw`            VARCHAR(255) DEFAULT NULL,
+  `due_date`             DATE DEFAULT NULL,
+  `notes`                TEXT DEFAULT NULL,
+  `archive_path`         TEXT DEFAULT NULL,
+  `result_raw`           VARCHAR(255) DEFAULT NULL,
+  `result_status`        ENUM('NEW','IN_PROGRESS','DONE','NO_ACTION','CANCELLED') DEFAULT NULL,
+  `result_amount`        DECIMAL(15,2) DEFAULT NULL,
+  `result_percent`       TINYINT UNSIGNED DEFAULT NULL,
+  `contract_ref_raw`     VARCHAR(255) DEFAULT NULL,
+  `contract_number`      VARCHAR(128) DEFAULT NULL,
+  `contract_date`        DATE DEFAULT NULL,
+  `contract_amount`      DECIMAL(15,2) DEFAULT NULL,
+  `bundle_key`           VARCHAR(255) DEFAULT NULL,
+  `duplicate_of_case_id` CHAR(36) DEFAULT NULL,
+  `created_at`           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`           DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_cases_block_year` (`block_type`, `year`),
+  KEY `idx_cases_task_date` (`task_date`),
+  KEY `idx_cases_due_date` (`due_date`),
+  KEY `idx_cases_case_code` (`case_code`),
+  KEY `idx_cases_contract_number` (`contract_number`),
+  KEY `idx_cases_status` (`result_status`),
+  KEY `idx_cases_bundle` (`bundle_key`),
+  CONSTRAINT `fk_cases_duplicate` FOREIGN KEY (`duplicate_of_case_id`) REFERENCES `cases` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `case_attributes` (
+  `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `case_id`        CHAR(36) NOT NULL,
+  `attr_key`       VARCHAR(64) NOT NULL,
+  `attr_value`     TEXT DEFAULT NULL,
+  `attr_value_num` DECIMAL(15,2) DEFAULT NULL,
+  `attr_value_date` DATE DEFAULT NULL,
+  `created_at`     DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_case_attr` (`case_id`, `attr_key`),
+  KEY `idx_attr_key` (`attr_key`),
+  CONSTRAINT `fk_attr_case` FOREIGN KEY (`case_id`) REFERENCES `cases` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `case_assignees` (
+  `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `case_id`    CHAR(36) NOT NULL,
+  `user_id`    INT UNSIGNED NOT NULL,
+  `role`       ENUM('RESPONSIBLE','EXECUTOR','APPROVER','CONTROLLER') NOT NULL DEFAULT 'EXECUTOR',
+  `is_primary` TINYINT(1) NOT NULL DEFAULT 0,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_case_user_role` (`case_id`, `user_id`, `role`),
+  KEY `idx_case_assignees_case` (`case_id`),
+  KEY `idx_case_assignees_user` (`user_id`),
+  CONSTRAINT `fk_ca_case` FOREIGN KEY (`case_id`) REFERENCES `cases` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_ca_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `case_events` (
+  `id`         BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `case_id`    CHAR(36) NOT NULL,
+  `event_date` DATE DEFAULT NULL,
+  `event_type` ENUM('NOTE','SENT_TO_ACCOUNTING','GOODS_RECEIVED','PENALTY_PAID','AGREEMENT_SIGNED','CLOSED','STATUS_CHANGED') NOT NULL DEFAULT 'NOTE',
+  `amount`     DECIMAL(15,2) DEFAULT NULL,
+  `text`       TEXT DEFAULT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_events_case` (`case_id`),
+  KEY `idx_events_type` (`event_type`),
+  CONSTRAINT `fk_events_case` FOREIGN KEY (`case_id`) REFERENCES `cases` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+CREATE TABLE IF NOT EXISTS `case_files` (
+  `id`          BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `case_id`     CHAR(36) NOT NULL,
+  `file_name`   VARCHAR(255) NOT NULL,
+  `file_path`   TEXT NOT NULL,
+  `mime_type`   VARCHAR(128) DEFAULT NULL,
+  `size_bytes`  BIGINT DEFAULT NULL,
+  `uploaded_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_files_case` (`case_id`),
+  CONSTRAINT `fk_files_case` FOREIGN KEY (`case_id`) REFERENCES `cases` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
 -- ═══ AUDIT LOG ═════════════════════════════════════════
 CREATE TABLE IF NOT EXISTS `audit_log` (
   `id`           BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,

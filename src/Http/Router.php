@@ -11,6 +11,7 @@ final class Router
 
     public function get(string $p, array|callable $h, array $m = []): self  { return $this->add('GET', $p, $h, $m); }
     public function post(string $p, array|callable $h, array $m = []): self { return $this->add('POST', $p, $h, $m); }
+    public function patch(string $p, array|callable $h, array $m = []): self { return $this->add('PATCH', $p, $h, $m); }
 
     private function add(string $method, string $pattern, array|callable $handler, array $meta): self
     {
