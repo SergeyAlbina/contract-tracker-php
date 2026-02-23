@@ -194,7 +194,9 @@ function infer_year(
     ?string $contractDate,
     ?string $contractNumber,
     ?string $caseCode,
-    ?string $subjectRaw
+    ?string $subjectRaw,
+    ?string $archivePath,
+    ?string $notes
 ): ?int {
     if ($year !== null && $year >= 2000 && $year <= 2100) {
         return $year;
@@ -210,7 +212,7 @@ function infer_year(
         }
     }
 
-    foreach ([$contractNumber, $caseCode, $subjectRaw] as $text) {
+    foreach ([$contractNumber, $caseCode, $subjectRaw, $archivePath, $notes] as $text) {
         if ($text !== null && preg_match('/(20\d{2})/', $text, $m)) {
             return (int) $m[1];
         }
@@ -615,9 +617,10 @@ foreach ($rows as $index => $row) {
         $data['task_date'],
         $data['contract_date'],
         $data['contract_number'],
-        $data['case_code']
-        ,
-        $data['subject_raw']
+        $data['case_code'],
+        $data['subject_raw'],
+        $data['archive_path'],
+        $data['notes']
     );
 
     if ($data['result_status'] === null) {

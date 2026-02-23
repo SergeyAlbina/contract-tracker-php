@@ -85,6 +85,8 @@ php scripts/import_cases_csv.php output/spreadsheet/cases_import.csv --apply
 - `GET /contracts/export.csv` — выгрузка реестра.
 - `GET /procurements` — список закупок.
 - `GET /cases?block_type=&year=&status=&assignee=&q=` — единый реестр дел (JSON).
+- `GET /cases/registry` — веб-интерфейс реестра дел.
+- `GET /cases/registry/{id}` — карточка дела (веб).
 - `POST /cases` — создать дело.
 - `PATCH /cases/{id}` — обновить дело.
 - `POST /cases/{id}/attributes` — сохранить редкие атрибуты.

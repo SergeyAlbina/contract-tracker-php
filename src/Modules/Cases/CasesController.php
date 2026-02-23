@@ -6,10 +6,71 @@ namespace App\Modules\Cases;
 use App\App;
 use App\Http\Request;
 use App\Http\Response;
+use App\Modules\Users\UsersRepository;
+use App\Shared\Enum\CaseBlockType;
+use App\Shared\Enum\CaseResultStatus;
 
 final class CasesController
 {
     public function __construct(private readonly App $app) {}
+
+    public function registry(Request $request): Response
+    {
+        $service = $this->app->make(CasesService::class);
+        $filters = [
+            'block_type' => (string) $request->query('block_type', ''),
+            'year' => (string) $request->query('year', ''),
+            'result_status' => (string) $request->query('status', $request->query('result_status', '')),
+            'assignee' => (string) $request->query('assignee', ''),
+            'q' => (string) $request->query('q', ''),
+            'show_duplicates' => (int) $request->query('show_duplicates', '0'),
+            'overdue' => (int) $request->query('overdue', '0'),
+            'in_progress' => (int) $request->query('in_progress', '0'),
+            'page' => (int) $request->query('page', '1'),
+            'per_page' => (int) $request->query('per_page', '50'),
+        ];
+
+        $result = $service->list($filters);
+        $users = $this->app->make(UsersRepository::class)->all();
+
+        return $this->app->view('cases/list', [
+            'title' => 'Дела',
+            'items' => $result['items'],
+            'total' => $result['total'],
+            'page' => $result['page'],
+            'pages' => $result['pages'],
+            'perPage' => $result['per_page'],
+            'filters' => $filters,
+            'users' => $users,
+            'blockTypes' => CaseBlockType::cases(),
+            'statuses' => CaseResultStatus::cases(),
+        ]);
+    }
+
+    public function registryShow(Request $request): Response
+    {
+        $caseId = (string) $request->param('id', '');
+        $item = $this->app->make(CasesService::class)->get($caseId);
+        if (!$item) {
+            $this->app->flash('error', 'Дело не найдено.');
+            return Response::redirect('/cases/registry');
+        }
+
+        $title = (string) ($item['case_code'] ?? '');
+        if ($title === '') {
+            $subject = trim((string) ($item['subject_raw'] ?? ''));
+            if ($subject !== '') {
+                $title = function_exists('mb_substr') ? mb_substr($subject, 0, 60) : substr($subject, 0, 60);
+            } else {
+                $title = (string) $item['id'];
+            }
+        }
+
+        return $this->app->view('cases/view', [
+            'title' => 'Дело: ' . $title,
+            'item' => $item,
+        ]);
+    }
 
     public function index(Request $request): Response
     {

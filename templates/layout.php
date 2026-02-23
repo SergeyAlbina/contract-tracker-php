@@ -44,6 +44,9 @@
       <a href="/contracts" class="<?= str_starts_with($uriPath, '/contracts') ? 'active' : '' ?>">
         📄 <span class="nav-text">Контракты</span>
       </a>
+      <a href="/cases/registry" class="<?= str_starts_with($uriPath, '/cases/registry') ? 'active' : '' ?>">
+        📚 <span class="nav-text">Дела</span>
+      </a>
       <a href="/procurements" class="<?= str_starts_with($uriPath, '/procurements') ? 'active' : '' ?>">
         🛒 <span class="nav-text">Закупки</span>
       </a>

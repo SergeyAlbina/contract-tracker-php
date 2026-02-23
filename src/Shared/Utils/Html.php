@@ -64,6 +64,16 @@ final class Html
             'paid' => 'badge--emerald', 'canceled' => 'badge--rose',
             'rfq' => 'badge--sky', 'evaluation' => 'badge--amber',
             'awarded' => 'badge--emerald',
+            'TASKS' => 'badge--sky',
+            'TERMINATIONS' => 'badge--rose',
+            'CLAIMS' => 'badge--amber',
+            'CONCLUDED' => 'badge--emerald',
+            'APPROVED_FZ' => 'badge--cyan',
+            'NEW' => 'badge--slate',
+            'IN_PROGRESS' => 'badge--sky',
+            'DONE' => 'badge--emerald',
+            'NO_ACTION' => 'badge--amber',
+            'CANCELLED' => 'badge--rose',
             'admin' => 'badge--amber', 'manager' => 'badge--sky', 'viewer' => 'badge--slate',
         ];
         $class = $map[$value] ?? 'badge--slate';

@@ -4,6 +4,9 @@ declare(strict_types=1);
 use App\Modules\Cases\CasesController;
 
 /** @var \App\Http\Router $router */
+$router->get('/cases/registry', [CasesController::class, 'registry']);
+$router->get('/cases/registry/{id:[0-9a-fA-F-]+}', [CasesController::class, 'registryShow']);
+
 $router->get('/cases', [CasesController::class, 'index']);
 $router->get('/cases/{id:[0-9a-fA-F-]+}', [CasesController::class, 'show']);
 
