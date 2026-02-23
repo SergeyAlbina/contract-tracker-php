@@ -48,6 +48,9 @@
         🛒 <span class="nav-text">Закупки</span>
       </a>
       <?php if (($user['role'] ?? '') === 'admin'): ?>
+      <a href="/audit" class="<?= str_starts_with($uriPath, '/audit') ? 'active' : '' ?>">
+        🧾 <span class="nav-text">Аудит</span>
+      </a>
       <a href="/users" class="<?= str_starts_with($uriPath, '/users') ? 'active' : '' ?>">
         👥 <span class="nav-text">Пользователи</span>
       </a>

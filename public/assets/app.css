@@ -398,6 +398,40 @@ tr:hover td { background: var(--bg-hover); }
 .td-num { font-family: var(--f-mono); font-size: .82rem; }
 .td-link { font-weight: 600; }
 
+.audit-action {
+  font-family: var(--f-mono);
+  font-size: .75rem;
+  color: var(--text-1);
+}
+
+.audit-details summary {
+  cursor: pointer;
+  color: var(--accent-bright);
+  font-size: .78rem;
+  list-style: none;
+}
+.audit-details summary::-webkit-details-marker { display: none; }
+.audit-details summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: .4rem;
+  transform: translateY(-1px);
+}
+.audit-details[open] summary::before { content: '▾'; }
+.audit-details pre {
+  margin-top: .45rem;
+  padding: .55rem .65rem;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-1);
+  color: var(--text-1);
+  font-size: .74rem;
+  line-height: 1.5;
+  font-family: var(--f-mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 /* ═══ FINANCE CARDS ══════════════════════════════════ */
 .finance-row {
   display: grid;
