@@ -11,8 +11,8 @@ final class CsrfMiddleware
 
     public function handle(Request $request): ?Response
     {
-        if (!$request->isPost()) return null;
-        if ($this->csrf->validate((string) $request->post('_csrf_token', ''))) return null;
+        if (!in_array($request->method(), ['POST', 'PUT', 'PATCH', 'DELETE'], true)) return null;
+        if ($this->csrf->validate((string) $request->input('_csrf_token', ''))) return null;
 
         return Response::html('<div style="text-align:center;padding:4rem;font-family:sans-serif">
             <h1 style="color:#f43f5e">403 — CSRF</h1>
