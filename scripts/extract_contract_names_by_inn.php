@@ -182,7 +182,14 @@ $metrics['contracts_unknown_name_after'] = (int) ($pdo->query(
     "SELECT COUNT(*) FROM contracts WHERE contractor_name IS NULL OR contractor_name = '' OR contractor_name = 'Контрагент не указан'"
 )->fetchColumn() ?: 0);
 
-echo json_encode($metrics, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) . PHP_EOL;
+$json = json_encode($metrics, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT | JSON_INVALID_UTF8_SUBSTITUTE);
+if (!is_string($json)) {
+    $json = json_encode([
+        'error' => 'json_encode_failed',
+        'json_error' => json_last_error_msg(),
+    ], JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+}
+echo $json . PHP_EOL;
 
 function resolveStoragePath(string $basePath): string
 {
@@ -396,6 +403,10 @@ function cleanupContractorCandidate(string $value): ?string
     $value = preg_split('/(?:Сокращенн\w*\s+наименование|Полное\s+наименование|ИНН|КПП|ОГРН|ОГРНИП|Статус|Место\s+нахожд\w*|Почтов\w*\s+адрес|Адрес|Телефон|Электронн\w*\s+почт\w*|в\s+лице|именуем\w*|действующ\w*)/ui', $value)[0] ?? $value;
     $value = trim($value, " \t\n\r\0\x0B,.;:()[]{}<>\"'«»");
 
+    if (function_exists('mb_check_encoding') && !mb_check_encoding($value, 'UTF-8')) {
+        return null;
+    }
+
     $doubleQuotes = substr_count($value, '"');
     if ($doubleQuotes === 1) {
         $value = str_replace('"', '', $value);
@@ -407,6 +418,14 @@ function cleanupContractorCandidate(string $value): ?string
     }
     $value = trim($value, " \t\n\r\0\x0B,.;:()[]{}<>\"'«»");
 
+    // Отсекаем банковские/служебные хвосты и мусор OCR.
+    if (preg_match('/(?:Р\/с|К\/с|БИК|E-?Mail|@|http|www\.|тел\.?:)/ui', $value)) {
+        return null;
+    }
+    if (strpos($value, '�') !== false) {
+        return null;
+    }
+
     $len = function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : strlen($value);
     if ($value === '' || $len < 5) {
         return null;
@@ -415,8 +434,32 @@ function cleanupContractorCandidate(string $value): ?string
         $value = function_exists('mb_substr') ? mb_substr($value, 0, 180, 'UTF-8') : substr($value, 0, 180);
         $value = rtrim($value, " \t\n\r\0\x0B,.;:()[]{}<>\"'«»");
     }
+
+    if (preg_match('/^Индивидуальный\s+предприниматель$/ui', $value)) {
+        return null;
+    }
+    if (preg_match('/^Индивидуальный\s+предприниматель\s+[А-ЯЁA-Z]\.?$/u', $value)) {
+        return null;
+    }
+    if (preg_match('/^Индивидуальный\s+предприниматель\s+[А-ЯЁA-Z][а-яёa-z\-]+$/u', $value)) {
+        return null;
+    }
+
+    if (preg_match('/^(?:ООО|АО|ПАО|ОАО)$/u', $value)) {
+        return null;
+    }
+
     if (preg_match('/\b(заказчик|бюро\s+судебно-медицинской\s+экспертизы)\b/ui', $value)) {
         return null;
     }
+    if (preg_match('/банк/ui', $value)) {
+        return null;
+    }
+
+    // Частый ложный матч в реквизитах (не название поставщика).
+    if (preg_match('/^АО\s+ХАНТЫ-МАНСИЙСКИЙ\s+АВТОНОМНЫЙ\s+ОКРУГ\s*-\s*ЮГРА$/u', $value)) {
+        return null;
+    }
+
     return $value;
 }
