@@ -52,6 +52,33 @@ php -S 127.0.0.1:8000 -t public
 - логин: `admin`
 - пароль: `admin123`
 
+## Импорт из реестров Excel
+
+Подготовка очищенного датасета (из входящих/претензий/задач):
+
+```bash
+python3 scripts/prepare_cases_dataset.py \
+  --incoming "/path/Реестр входящих и отписаных документов.xlsx" \
+  --claims "/path/Реестр притензий 2024-2025.xlsx" \
+  --tasks "/path/ЗАДАЧИ 2025.xlsx" \
+  --out-dir output/spreadsheet
+```
+
+После подготовки:
+- `output/spreadsheet/cases_dataset_clean.xlsx` — сводный очищенный файл для проверки;
+- `output/spreadsheet/cases_import.csv` — источник для загрузки в `cases`;
+- `output/spreadsheet/import_report.json` — контроль качества/объёмов.
+
+Загрузка в систему:
+
+```bash
+# только проверка
+php scripts/import_cases_csv.php output/spreadsheet/cases_import.csv --dry-run
+
+# применение в БД
+php scripts/import_cases_csv.php output/spreadsheet/cases_import.csv --apply
+```
+
 ## Ключевые маршруты
 
 - `GET /contracts` — список контрактов.

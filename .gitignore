@@ -3,3 +3,5 @@ storage/*
 !storage/.gitkeep
 vendor/
 *.log
+output/spreadsheet/
+scripts/__pycache__/
