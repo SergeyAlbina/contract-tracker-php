@@ -267,6 +267,7 @@ def normalize_tasks_workbook(path: Path) -> NormalizeResult:
     xls = pd.ExcelFile(path)
     cases_rows: list[dict[str, Any]] = []
     issues: list[dict[str, Any]] = []
+    file_year = parse_year_from_text(path.name)
 
     for sheet in xls.sheet_names:
         df = pd.read_excel(path, sheet_name=sheet)
@@ -320,6 +321,8 @@ def normalize_tasks_workbook(path: Path) -> NormalizeResult:
                 year = int(task_date[:4])
             if year is None and contract_date:
                 year = int(contract_date[:4])
+            if year is None and file_year:
+                year = file_year
 
             if year is None:
                 issues.append(

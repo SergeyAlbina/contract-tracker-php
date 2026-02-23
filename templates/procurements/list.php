@@ -7,7 +7,14 @@ $canEdit = $session->hasRole('admin', 'manager');
 ?>
 
 <div class="page-head">
-  <h1><span class="emoji">🛒</span> Закупки <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
+  <h1>
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="9" cy="20" r="1"></circle>
+      <circle cx="17" cy="20" r="1"></circle>
+      <path d="M3 4h2l2.4 10.4a1 1 0 0 0 1 .8h8.6a1 1 0 0 0 1-.8L20 7H7"></path>
+    </svg>
+    Закупки <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span>
+  </h1>
   <?php if ($canEdit): ?>
     <a href="/procurements/new" class="btn btn--primary">+ Новая закупка</a>
   <?php endif; ?>

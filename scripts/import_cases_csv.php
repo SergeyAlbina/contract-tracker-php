@@ -189,6 +189,7 @@ function extract_date_from_text(?string $text): ?string
 
 function infer_year(
     ?int $year,
+    ?string $sourceFile,
     ?string $sourceSheet,
     ?string $taskDate,
     ?string $contractDate,
@@ -200,6 +201,10 @@ function infer_year(
 ): ?int {
     if ($year !== null && $year >= 2000 && $year <= 2100) {
         return $year;
+    }
+
+    if ($sourceFile !== null && preg_match('/(20\d{2})/', $sourceFile, $m)) {
+        return (int) $m[1];
     }
 
     if ($sourceSheet !== null && preg_match('/(20\d{2})/', $sourceSheet, $m)) {
@@ -613,6 +618,7 @@ foreach ($rows as $index => $row) {
 
     $data['year'] = infer_year(
         $data['year'],
+        normalize_text($row['source_file'] ?? null),
         normalize_text($row['source_sheet'] ?? null),
         $data['task_date'],
         $data['contract_date'],

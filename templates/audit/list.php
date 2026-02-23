@@ -7,7 +7,15 @@ $selectedUserId = is_int($filters['user_id'] ?? null) ? (string) $filters['user_
 ?>
 
 <div class="page-head">
-  <h1><span class="emoji">🧾</span> Журнал аудита <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
+  <h1>
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 3h16v18l-3-2-3 2-2-2-2 2-3-2-3 2z"></path>
+      <path d="M8 7h8"></path>
+      <path d="M8 11h8"></path>
+      <path d="M8 15h5"></path>
+    </svg>
+    Журнал аудита <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span>
+  </h1>
 </div>
 
 <form class="filters" method="get" action="/audit">

@@ -114,6 +114,35 @@ body {
   line-height: 1;
 }
 
+.ico {
+  width: 1em;
+  height: 1em;
+  display: inline-block;
+  vertical-align: -0.14em;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex: 0 0 auto;
+}
+
+.topbar__brand-icon .ico {
+  width: .95rem;
+  height: .95rem;
+  color: #fff;
+}
+
+.topbar__nav .ico {
+  margin-right: .35rem;
+  color: var(--accent-bright);
+}
+
+.page-head h1 .ico {
+  margin-right: .28rem;
+  color: var(--accent-bright);
+}
+
 a { color: var(--accent-bright); text-decoration: none; transition: color var(--dur) var(--ease); }
 a:hover { color: var(--accent); }
 

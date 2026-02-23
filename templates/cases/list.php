@@ -24,7 +24,13 @@ $pageQuery = static function (int $targetPage) use ($queryBase): string {
 ?>
 
 <div class="page-head">
-  <h1><span class="emoji">📚</span> Дела <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= (int) $total ?>)</span></h1>
+  <h1>
+    <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 7a2 2 0 0 1 2-2h5l2 2h9"></path>
+      <path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+    </svg>
+    Дела <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= (int) $total ?>)</span>
+  </h1>
   <div class="flex gap-sm">
     <a href="/cases" class="btn btn--ghost">API JSON</a>
   </div>
