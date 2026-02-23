@@ -30,6 +30,8 @@ final class ProcurementsController
             'page' => $page,
             'pages' => (int) ceil($result['total'] / 20),
             'filters' => $filters,
+            'statusCounts' => $result['status_counts'] ?? [],
+            'totalWithoutStatus' => (int) ($result['total_without_status'] ?? $result['total']),
         ]);
     }
 

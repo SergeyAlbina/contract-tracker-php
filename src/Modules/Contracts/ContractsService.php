@@ -14,7 +14,15 @@ final class ContractsService
 
     public function __construct(App $app) { $this->app = $app; $this->repo = $app->make(ContractsRepository::class); }
 
-    public function list(int $page, array $filters): array { return $this->repo->paginate($page, 20, $filters); }
+    public function list(int $page, array $filters): array
+    {
+        $result = $this->repo->paginate($page, 20, $filters);
+        $statusCounts = $this->repo->countByStatus($filters);
+        $result['status_counts'] = $statusCounts;
+        $result['total_without_status'] = (int) array_sum($statusCounts);
+
+        return $result;
+    }
 
     public function export(array $filters): array { return $this->repo->exportRows($filters); }
 

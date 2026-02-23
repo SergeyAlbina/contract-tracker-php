@@ -2,9 +2,30 @@
 use App\Shared\Utils\Html;
 use App\Shared\Enum\{LawType, ContractStatus};
 /** @var array $items @var int $total @var int $page @var int $pages @var array $filters */
+/** @var array<string,int> $statusCounts @var int $totalWithoutStatus */
 $canEdit = $session->hasRole('admin', 'manager');
 $exportQuery = http_build_query(array_filter($filters, static fn($v) => $v !== '' && $v !== null));
 $exportUrl = '/contracts/export.csv' . ($exportQuery ? '?' . $exportQuery : '');
+$statusCounts = $statusCounts ?? [];
+$totalWithoutStatus = isset($totalWithoutStatus) ? (int) $totalWithoutStatus : (int) array_sum($statusCounts);
+
+$queryBase = [
+    'search' => (string) ($filters['search'] ?? ''),
+    'law_type' => (string) ($filters['law_type'] ?? ''),
+    'status' => (string) ($filters['status'] ?? ''),
+];
+$tabsQueryBase = array_merge($queryBase, ['page' => 1]);
+$tabHref = static function (string $status) use ($tabsQueryBase): string {
+    $query = array_merge($tabsQueryBase, ['status' => $status]);
+    return '/contracts?' . http_build_query($query);
+};
+$statusFlow = [
+    ContractStatus::DRAFT,
+    ContractStatus::ACTIVE,
+    ContractStatus::EXECUTED,
+    ContractStatus::TERMINATED,
+    ContractStatus::CANCELLED,
+];
 ?>
 
 <div class="page-head">
@@ -16,7 +37,7 @@ $exportUrl = '/contracts/export.csv' . ($exportQuery ? '?' . $exportQuery : '');
       <path d="M16 17H8"></path>
       <path d="M10 9H8"></path>
     </svg>
-    Контракты <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span>
+    Контракты <span class="page-head__count">(<?= (int) $total ?>)</span>
   </h1>
   <div class="flex gap-sm">
     <a href="<?= Html::e($exportUrl) ?>" class="btn btn--ghost">⬇ Экспорт</a>
@@ -26,21 +47,40 @@ $exportUrl = '/contracts/export.csv' . ($exportQuery ? '?' . $exportQuery : '');
   </div>
 </div>
 
+<nav class="flow-tabs" aria-label="Этапы контрактов">
+  <a href="<?= Html::e($tabHref('')) ?>" class="flow-tab <?= $queryBase['status'] === '' ? 'active' : '' ?>">
+    Все
+    <span class="flow-tab__count"><?= $totalWithoutStatus ?></span>
+  </a>
+  <?php foreach ($statusFlow as $status): ?>
+    <?php
+      $value = $status->value;
+      $count = (int) ($statusCounts[$value] ?? 0);
+    ?>
+    <a href="<?= Html::e($tabHref($value)) ?>" class="flow-tab <?= $queryBase['status'] === $value ? 'active' : '' ?>">
+      <?= Html::e($status->label()) ?>
+      <span class="flow-tab__count"><?= $count ?></span>
+    </a>
+  <?php endforeach; ?>
+</nav>
+
 <form class="filters" method="get" action="/contracts">
-  <input type="text" name="search" placeholder="Поиск по номеру, предмету, контрагенту…" value="<?= Html::e($filters['search']) ?>" style="flex:1;min-width:200px">
+  <input type="text" name="search" placeholder="Поиск по номеру, предмету, контрагенту…" value="<?= Html::e($queryBase['search']) ?>" style="flex:1;min-width:220px">
   <select name="law_type">
     <option value="">Все законы</option>
     <?php foreach (LawType::cases() as $l): ?>
-      <option value="<?= $l->value ?>" <?= $filters['law_type'] === $l->value ? 'selected' : '' ?>><?= $l->label() ?></option>
+      <option value="<?= $l->value ?>" <?= $queryBase['law_type'] === $l->value ? 'selected' : '' ?>><?= $l->label() ?></option>
     <?php endforeach; ?>
   </select>
   <select name="status">
     <option value="">Все статусы</option>
     <?php foreach (ContractStatus::cases() as $s): ?>
-      <option value="<?= $s->value ?>" <?= $filters['status'] === $s->value ? 'selected' : '' ?>><?= $s->label() ?></option>
+      <option value="<?= $s->value ?>" <?= $queryBase['status'] === $s->value ? 'selected' : '' ?>><?= $s->label() ?></option>
     <?php endforeach; ?>
   </select>
+  <input type="hidden" name="page" value="1">
   <button type="submit" class="btn btn--ghost btn--sm">🔍 Найти</button>
+  <a href="/contracts" class="btn btn--ghost btn--sm">Сброс</a>
 </form>
 
 <?php if (empty($items)): ?>

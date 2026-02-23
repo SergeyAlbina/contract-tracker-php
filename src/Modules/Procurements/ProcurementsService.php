@@ -19,7 +19,12 @@ final class ProcurementsService
 
     public function list(int $page, array $filters): array
     {
-        return $this->repo->paginate($page, 20, $filters);
+        $result = $this->repo->paginate($page, 20, $filters);
+        $statusCounts = $this->repo->countByStatus($filters);
+        $result['status_counts'] = $statusCounts;
+        $result['total_without_status'] = (int) array_sum($statusCounts);
+
+        return $result;
     }
 
     public function getById(int $id): ?array

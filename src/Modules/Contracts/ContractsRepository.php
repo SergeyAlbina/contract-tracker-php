@@ -34,6 +34,28 @@ final class ContractsRepository
         return ['items' => $stmt->fetchAll(), 'total' => $total];
     }
 
+    /** @return array<string,int> */
+    public function countByStatus(array $filters): array
+    {
+        $filters['status'] = '';
+        [$where, $params] = $this->buildWhere($filters);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT c.status, COUNT(*) AS cnt
+             FROM contracts c
+             WHERE {$where}
+             GROUP BY c.status"
+        );
+        $stmt->execute($params);
+
+        $result = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $result[(string) $row['status']] = (int) $row['cnt'];
+        }
+
+        return $result;
+    }
+
     public function findById(int $id): ?array
     {
         $s = $this->pdo->prepare('SELECT c.*, u.full_name AS creator_name FROM contracts c LEFT JOIN users u ON u.id = c.created_by WHERE c.id = :id');

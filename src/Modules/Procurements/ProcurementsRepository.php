@@ -44,6 +44,28 @@ final class ProcurementsRepository
         return ['items' => $stmt->fetchAll(), 'total' => $total];
     }
 
+    /** @return array<string,int> */
+    public function countByStatus(array $filters): array
+    {
+        $filters['status'] = '';
+        [$where, $params] = $this->buildWhere($filters);
+
+        $stmt = $this->pdo->prepare(
+            "SELECT p.status, COUNT(*) AS cnt
+             FROM procurements p
+             WHERE {$where}
+             GROUP BY p.status"
+        );
+        $stmt->execute($params);
+
+        $result = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $result[(string) $row['status']] = (int) $row['cnt'];
+        }
+
+        return $result;
+    }
+
     public function findById(int $id): ?array
     {
         $stmt = $this->pdo->prepare(

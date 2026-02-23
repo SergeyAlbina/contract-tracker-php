@@ -33,6 +33,13 @@
   $roleLabels = ['admin' => 'Администратор', 'manager' => 'Менеджер', 'viewer' => 'Наблюдатель'];
   $isAdmin = (($user['role'] ?? '') === 'admin');
   $adminMenuActive = str_starts_with($uriPath, '/audit') || str_starts_with($uriPath, '/users');
+  $userRole = (string) ($user['role'] ?? '');
+  $roleLabel = $roleLabels[$userRole] ?? 'Роль';
+  $userName = trim((string) ($user['full_name'] ?? ''));
+  $normalize = static function (string $value): string {
+    return function_exists('mb_strtolower') ? mb_strtolower($value) : strtolower($value);
+  };
+  $showUserName = $userName !== '' && $normalize($userName) !== $normalize($roleLabel);
 ?>
 <div class="shell">
 
@@ -108,11 +115,13 @@
 
     <?php if ($user): ?>
     <div class="topbar__user">
-      <span class="user-name"><?= Html::e($user['full_name']) ?></span>
-      <?= Html::badge((string) $user['role'], $roleLabels[(string) $user['role']] ?? 'Роль') ?>
+      <?php if ($showUserName): ?>
+      <span class="user-name"><?= Html::e($userName) ?></span>
+      <?php endif; ?>
+      <?= Html::badge($userRole, $roleLabel) ?>
       <button type="button" class="btn btn--ghost btn--sm theme-toggle" data-theme-toggle aria-label="Переключить тему">Тема</button>
       <a href="/profile/password" class="btn btn--ghost btn--sm">🔐 Сменить пароль</a>
-      <form method="post" action="/logout" style="display:inline">
+      <form method="post" action="/logout">
         <?= $csrf->field() ?>
         <button type="submit" class="btn btn--ghost btn--sm">Выйти</button>
       </form>

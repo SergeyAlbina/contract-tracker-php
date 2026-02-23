@@ -168,6 +168,7 @@ a:hover { color: var(--accent); }
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
@@ -193,20 +194,25 @@ a:hover { color: var(--accent); }
 .topbar__nav {
   display: flex;
   align-items: center;
+  justify-content: center;
+  flex: 1 1 440px;
+  flex-wrap: wrap;
   gap: .25rem;
 }
 
 .topbar__nav a {
   color: var(--text-2);
-  font-size: .82rem;
+  font-size: .84rem;
   font-weight: 500;
-  padding: .4rem .75rem;
+  padding: .45rem .8rem;
   border-radius: var(--r-sm);
+  border: 1px solid transparent;
   transition: all var(--dur) var(--ease);
 }
 .topbar__nav a:hover, .topbar__nav a.active {
   color: var(--text-0);
   background: var(--bg-hover);
+  border-color: var(--border);
 }
 
 .topbar__admin {
@@ -219,10 +225,11 @@ a:hover { color: var(--accent); }
   align-items: center;
   gap: .35rem;
   color: var(--text-2);
-  font-size: .82rem;
+  font-size: .84rem;
   font-weight: 500;
-  padding: .4rem .75rem;
+  padding: .45rem .8rem;
   border-radius: var(--r-sm);
+  border: 1px solid transparent;
   transition: all var(--dur) var(--ease);
   cursor: pointer;
 }
@@ -236,6 +243,7 @@ a:hover { color: var(--accent); }
 .topbar__admin.is-active .topbar__admin-toggle {
   color: var(--text-0);
   background: var(--bg-hover);
+  border-color: var(--border);
 }
 
 .topbar__admin-toggle .ico {
@@ -286,9 +294,16 @@ a:hover { color: var(--accent); }
 .topbar__user {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-left: auto;
   gap: .75rem;
   font-size: .82rem;
   color: var(--text-2);
+}
+
+.topbar__user form {
+  display: inline-flex;
 }
 
 .theme-toggle {
@@ -351,10 +366,20 @@ a:hover { color: var(--accent); }
   font-size: clamp(1.25rem, 2.5vw, 1.75rem);
   font-weight: 700;
   letter-spacing: -.04em;
-  background: linear-gradient(135deg, var(--text-0), var(--text-1));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-0);
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+}
+
+.page-head h1 .ico {
+  color: var(--accent);
+}
+
+.page-head__count {
+  color: var(--text-2);
+  font-size: .7em;
+  font-weight: 500;
 }
 
 /* ═══ BUTTONS ════════════════════════════════════════ */
@@ -507,6 +532,7 @@ tr:hover td { background: var(--bg-hover); }
 .td-num { font-family: var(--f-mono); font-size: .82rem; }
 .td-link { font-weight: 600; }
 
+.flow-tabs,
 .cases-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -514,24 +540,27 @@ tr:hover td { background: var(--bg-hover); }
   margin-bottom: .9rem;
 }
 
+.flow-tab,
 .cases-tab {
   display: inline-flex;
   align-items: center;
   gap: .35rem;
-  padding: .35rem .72rem;
+  padding: .42rem .78rem;
   border-radius: var(--r-full);
   border: 1px solid var(--border);
   color: var(--text-2);
   background: var(--bg-1);
-  font-size: .76rem;
+  font-size: .74rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: .04em;
 }
+.flow-tab:hover,
 .cases-tab:hover {
   color: var(--text-0);
   border-color: var(--border-hover);
 }
+.flow-tab.active,
 .cases-tab.active {
   color: var(--text-0);
   border-color: transparent;
@@ -539,6 +568,7 @@ tr:hover td { background: var(--bg-hover); }
   box-shadow: 0 6px 18px var(--accent-glow);
 }
 
+.flow-tab__count,
 .cases-tab__count {
   font-family: var(--f-mono);
   font-size: .72rem;
@@ -548,6 +578,7 @@ tr:hover td { background: var(--bg-hover); }
 .filters--cases {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: .55rem;
 }
 
@@ -753,21 +784,42 @@ tr:hover td { background: var(--bg-hover); }
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: .5rem;
+  align-items: center;
+  gap: .55rem;
   margin-bottom: 1.25rem;
+  padding: .65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  background: var(--bg-2);
 }
-.filters input, .filters select {
+
+.filters input:not([type='checkbox']):not([type='radio']),
+.filters select {
   font-family: var(--f-body);
   font-size: .82rem;
-  padding: .45rem .7rem;
+  padding: .5rem .75rem;
+  min-height: 2.25rem;
   background: var(--bg-1);
   color: var(--text-0);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   outline: none;
-  transition: border-color var(--dur) var(--ease);
+  transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
 }
-.filters input:focus, .filters select:focus { border-color: var(--accent); }
+
+.filters input:not([type='checkbox']):not([type='radio']):focus,
+.filters select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.filters input[type='checkbox'],
+.filters input[type='radio'] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--accent);
+}
 
 /* ═══ PAGINATION ═════════════════════════════════════ */
 .pgn { display: flex; align-items: center; gap: .25rem; margin-top: 1.25rem; justify-content: center; }
@@ -826,7 +878,7 @@ tr:hover td { background: var(--bg-hover); }
   padding: 3.5rem 1rem;
   color: var(--text-2);
 }
-.empty__icon { font-size: 3rem; margin-bottom: .75rem; filter: grayscale(.5); }
+.empty__icon { font-size: 3rem; margin-bottom: .75rem; }
 
 /* ═══ LOGIN PAGE ═════════════════════════════════════ */
 .login-page {
@@ -909,16 +961,22 @@ tr:hover td { background: var(--bg-hover); }
 
 /* ═══ RESPONSIVE — auto-scale ════════════════════════ */
 @media (max-width: 768px) {
-  .topbar { padding: .55rem 1rem; }
+  .topbar { padding: .55rem 1rem; gap: .65rem; }
+  .topbar__nav { justify-content: flex-start; flex: 1 1 100%; }
+  .topbar__user { width: 100%; justify-content: flex-end; }
   .topbar__nav a span.nav-text { display: none; }
   .topbar__admin-toggle span.nav-text { display: none; }
   .topbar__admin-menu { left: 0; right: auto; min-width: 180px; }
+  .filters { padding: .55rem; }
   .finance-row { grid-template-columns: 1fr 1fr; }
   .form-grid { grid-template-columns: 1fr; }
   .theme-toggle { min-width: auto; }
 }
 
 @media (max-width: 480px) {
+  .topbar { justify-content: center; }
+  .topbar__brand { width: 100%; justify-content: center; }
+  .topbar__user { justify-content: center; gap: .5rem; }
   .topbar__user span.user-name { display: none; }
   .finance-row { grid-template-columns: 1fr; }
   .page-head { flex-direction: column; align-items: flex-start; }

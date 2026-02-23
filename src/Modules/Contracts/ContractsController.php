@@ -17,7 +17,16 @@ final class ContractsController
         $page = max(1, (int) $r->query('page', '1'));
         $f = ['search' => $r->query('search',''), 'law_type' => $r->query('law_type',''), 'status' => $r->query('status','')];
         $res = $svc->list($page, $f);
-        return $this->app->view('contracts/list', ['title'=>'Контракты', 'items'=>$res['items'], 'total'=>$res['total'], 'page'=>$page, 'pages'=>(int)ceil($res['total']/20), 'filters'=>$f]);
+        return $this->app->view('contracts/list', [
+            'title' => 'Контракты',
+            'items' => $res['items'],
+            'total' => $res['total'],
+            'page' => $page,
+            'pages' => (int) ceil($res['total'] / 20),
+            'filters' => $f,
+            'statusCounts' => $res['status_counts'] ?? [],
+            'totalWithoutStatus' => (int) ($res['total_without_status'] ?? $res['total']),
+        ]);
     }
 
     public function exportCsv(Request $r): Response

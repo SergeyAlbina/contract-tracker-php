@@ -37,7 +37,7 @@ $allBlocksCount = isset($totalWithoutBlock) ? (int) $totalWithoutBlock : (int) a
       <path d="M3 7a2 2 0 0 1 2-2h5l2 2h9"></path>
       <path d="M3 7h18v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
     </svg>
-    Дела <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= (int) $total ?>)</span>
+    Дела <span class="page-head__count">(<?= (int) $total ?>)</span>
   </h1>
 </div>
 
