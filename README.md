@@ -79,6 +79,32 @@ php scripts/import_cases_csv.php output/spreadsheet/cases_import.csv --dry-run
 php scripts/import_cases_csv.php output/spreadsheet/cases_import.csv --apply
 ```
 
+## Сбор контрактов из ЕИС (PHP 7.3+)
+
+В репозитории сохранён совместимый скрипт:
+- `output/zakupki_contracts_rss.php`
+
+Что делает:
+- собирает RSS по фильтрам 44-ФЗ/заказчик/статусы/год;
+- обогащает по карточкам контрактов (ИНН, даты, предмет);
+- вытягивает вложения и ссылки на договор/платёжные документы;
+- поддерживает retry/backoff и кэш карточек.
+
+Пример запуска:
+
+```bash
+php output/zakupki_contracts_rss.php \
+  --year=2026 \
+  --insecure \
+  --request-pause=0.7 \
+  --http-retries=4 \
+  --format=csv \
+  --output=output/contracts_2026.csv \
+  --verbose
+```
+
+Подробно: `docs/ZAKUPKI_RSS_COLLECTOR.md`.
+
 ## Ключевые маршруты
 
 - `GET /contracts` — список контрактов.
@@ -110,7 +136,8 @@ php scripts/import_cases_csv.php output/spreadsheet/cases_import.csv --apply
   - выполнено: закупки + КП;
   - выполнено: этапы контракта (план/факт);
   - выполнено: счета и акты;
-  - выполнено: журнал аудита (интерфейс для администратора).
+  - выполнено: журнал аудита (интерфейс для администратора);
+  - выполнено: PHP 7.3+ коллектор ЕИС RSS (`output/zakupki_contracts_rss.php`, CLI+HTTP).
 - `v2.1` (план): сводный экран, паспорт контракта, почтовые уведомления.
 - `v3.0` (план): API, нагрузка сотрудников, хранение файлов в объектном хранилище, версионирование контрактов.
 

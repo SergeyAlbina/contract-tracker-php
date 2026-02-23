@@ -4,4 +4,9 @@ storage/*
 vendor/
 *.log
 output/spreadsheet/
+output/*.json
+output/*.csv
+output/*.sqlite
+output/.zakupki_card_cache.json
+!output/zakupki_contracts_rss.php
 scripts/__pycache__/
