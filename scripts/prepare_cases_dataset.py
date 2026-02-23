@@ -493,6 +493,7 @@ def normalize_claims_registry(path: Path) -> NormalizeResult:
 def normalize_incoming_registry(path: Path) -> NormalizeResult:
     xls = pd.ExcelFile(path)
     rows: list[dict[str, Any]] = []
+    cases_rows: list[dict[str, Any]] = []
     issues: list[dict[str, Any]] = []
 
     for sheet in xls.sheet_names:
@@ -547,7 +548,60 @@ def normalize_incoming_registry(path: Path) -> NormalizeResult:
                 }
             )
 
-    return NormalizeResult(cases_rows=[], incoming_rows=rows, claims_rows=[], issues=issues)
+            case_year = row_year
+            incoming_no_num = safe_int(in_no)
+            case_code = None
+            if case_year is not None and incoming_no_num is not None:
+                case_code = f"IN-{case_year}-{incoming_no_num}"
+            elif incoming_no_num is not None:
+                case_code = f"IN-{incoming_no_num}"
+
+            notes_parts = [f"Входящий №{in_no}" if in_no else "Входящий документ"]
+            if rez_date:
+                notes_parts.append(f"Резолюция: {rez_date}")
+            notes = " | ".join(notes_parts)
+
+            bundle_key = make_bundle_key(
+                "incoming_registry",
+                [sheet, in_no, in_date, title],
+            )
+
+            cases_rows.append(
+                {
+                    "source_file": path.name,
+                    "source_sheet": sheet,
+                    "source_row": int(idx + 2),
+                    "source_kind": "incoming_registry",
+                    "block_type": "TASKS",
+                    "year": case_year,
+                    "reg_no": incoming_no_num,
+                    "case_code": case_code,
+                    "subject_raw": title,
+                    "subject_clean": None,
+                    "budget_article": None,
+                    "procurement_form": "INCOMING_DOC",
+                    "amount_planned": None,
+                    "rnmc_amount": None,
+                    "task_date": in_date,
+                    "stage_raw": "INCOMING_REGISTRY",
+                    "due_date": rez_date,
+                    "notes": notes,
+                    "archive_path": None,
+                    "result_raw": f"Резолюция {rez_date}" if rez_date else "Входящий документ",
+                    "result_status": "IN_PROGRESS" if rez_date else "NEW",
+                    "result_amount": None,
+                    "result_percent": None,
+                    "contract_ref_raw": None,
+                    "contract_number": None,
+                    "contract_date": None,
+                    "contract_amount": None,
+                    "bundle_key": bundle_key,
+                    "assignees_text": assignees_norm,
+                    "assignees_list": assignees_norm,
+                }
+            )
+
+    return NormalizeResult(cases_rows=cases_rows, incoming_rows=rows, claims_rows=[], issues=issues)
 
 
 def write_outputs(
@@ -667,7 +721,7 @@ def main() -> int:
     claims_result = normalize_claims_registry(claims_path)
     incoming_result = normalize_incoming_registry(incoming_path)
 
-    cases_rows = tasks_result.cases_rows + claims_result.cases_rows
+    cases_rows = tasks_result.cases_rows + claims_result.cases_rows + incoming_result.cases_rows
     incoming_rows = incoming_result.incoming_rows
     claims_rows = claims_result.claims_rows
     issues = tasks_result.issues + claims_result.issues + incoming_result.issues

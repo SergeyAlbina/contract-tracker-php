@@ -24,7 +24,7 @@ $pageQuery = static function (int $targetPage) use ($queryBase): string {
 ?>
 
 <div class="page-head">
-  <h1>📚 Дела <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= (int) $total ?>)</span></h1>
+  <h1><span class="emoji">📚</span> Дела <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= (int) $total ?>)</span></h1>
   <div class="flex gap-sm">
     <a href="/cases" class="btn btn--ghost">API JSON</a>
   </div>
@@ -90,7 +90,7 @@ $pageQuery = static function (int $targetPage) use ($queryBase): string {
 
 <?php if (empty($items)): ?>
   <div class="empty">
-    <div class="empty__icon">📂</div>
+    <div class="empty__icon"><span class="emoji">📂</span></div>
     <p>Записей не найдено</p>
   </div>
 <?php else: ?>

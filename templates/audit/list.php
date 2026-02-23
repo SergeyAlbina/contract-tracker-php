@@ -7,7 +7,7 @@ $selectedUserId = is_int($filters['user_id'] ?? null) ? (string) $filters['user_
 ?>
 
 <div class="page-head">
-  <h1>🧾 Журнал аудита <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
+  <h1><span class="emoji">🧾</span> Журнал аудита <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
 </div>
 
 <form class="filters" method="get" action="/audit">
@@ -51,7 +51,7 @@ $selectedUserId = is_int($filters['user_id'] ?? null) ? (string) $filters['user_
 
 <?php if (empty($items)): ?>
   <div class="empty">
-    <div class="empty__icon">🧾</div>
+    <div class="empty__icon"><span class="emoji">🧾</span></div>
     <p>Событий по заданным фильтрам не найдено</p>
   </div>
 <?php else: ?>

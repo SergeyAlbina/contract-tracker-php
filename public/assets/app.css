@@ -108,6 +108,12 @@ body {
     radial-gradient(circle at 80% 80%, rgba(34,211,233,.02) 0%, transparent 50%);
 }
 
+.emoji {
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  font-variant-emoji: emoji;
+  line-height: 1;
+}
+
 a { color: var(--accent-bright); text-decoration: none; transition: color var(--dur) var(--ease); }
 a:hover { color: var(--accent); }
 

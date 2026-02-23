@@ -36,26 +36,26 @@
 
   <header class="topbar" role="banner">
     <a href="/contracts" class="topbar__brand">
-      <div class="topbar__brand-icon">📋</div>
+      <div class="topbar__brand-icon"><span class="emoji">📋</span></div>
       Реестр контрактов
     </a>
 
     <nav class="topbar__nav" role="navigation">
       <a href="/contracts" class="<?= str_starts_with($uriPath, '/contracts') ? 'active' : '' ?>">
-        📄 <span class="nav-text">Контракты</span>
+        <span class="emoji">📄</span> <span class="nav-text">Контракты</span>
       </a>
       <a href="/cases/registry" class="<?= str_starts_with($uriPath, '/cases/registry') ? 'active' : '' ?>">
-        📚 <span class="nav-text">Дела</span>
+        <span class="emoji">📚</span> <span class="nav-text">Дела</span>
       </a>
       <a href="/procurements" class="<?= str_starts_with($uriPath, '/procurements') ? 'active' : '' ?>">
-        🛒 <span class="nav-text">Закупки</span>
+        <span class="emoji">🛒</span> <span class="nav-text">Закупки</span>
       </a>
       <?php if (($user['role'] ?? '') === 'admin'): ?>
       <a href="/audit" class="<?= str_starts_with($uriPath, '/audit') ? 'active' : '' ?>">
-        🧾 <span class="nav-text">Аудит</span>
+        <span class="emoji">🧾</span> <span class="nav-text">Аудит</span>
       </a>
       <a href="/users" class="<?= str_starts_with($uriPath, '/users') ? 'active' : '' ?>">
-        👥 <span class="nav-text">Пользователи</span>
+        <span class="emoji">👥</span> <span class="nav-text">Пользователи</span>
       </a>
       <?php endif; ?>
     </nav>

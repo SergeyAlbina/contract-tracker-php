@@ -8,7 +8,7 @@ $exportUrl = '/contracts/export.csv' . ($exportQuery ? '?' . $exportQuery : '');
 ?>
 
 <div class="page-head">
-  <h1>📄 Контракты <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
+  <h1><span class="emoji">📄</span> Контракты <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
   <div class="flex gap-sm">
     <a href="<?= Html::e($exportUrl) ?>" class="btn btn--ghost">⬇ Экспорт</a>
     <?php if ($canEdit): ?>
@@ -36,7 +36,7 @@ $exportUrl = '/contracts/export.csv' . ($exportQuery ? '?' . $exportQuery : '');
 
 <?php if (empty($items)): ?>
   <div class="empty">
-    <div class="empty__icon">📂</div>
+    <div class="empty__icon"><span class="emoji">📂</span></div>
     <p>Контрактов не найдено</p>
     <?php if ($canEdit): ?>
       <a href="/contracts/new" class="btn btn--primary mt-2" style="display:inline-flex">+ Создать первый</a>

@@ -7,7 +7,7 @@ $canEdit = $session->hasRole('admin', 'manager');
 ?>
 
 <div class="page-head">
-  <h1>🛒 Закупки <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
+  <h1><span class="emoji">🛒</span> Закупки <span class="text-muted" style="font-size:.7em;font-weight:400">(<?= $total ?>)</span></h1>
   <?php if ($canEdit): ?>
     <a href="/procurements/new" class="btn btn--primary">+ Новая закупка</a>
   <?php endif; ?>
@@ -32,7 +32,7 @@ $canEdit = $session->hasRole('admin', 'manager');
 
 <?php if (!$items): ?>
   <div class="empty">
-    <div class="empty__icon">🧾</div>
+    <div class="empty__icon"><span class="emoji">🧾</span></div>
     <p>Закупки не найдены</p>
     <?php if ($canEdit): ?>
       <a href="/procurements/new" class="btn btn--primary mt-2" style="display:inline-flex">+ Создать первую закупку</a>
