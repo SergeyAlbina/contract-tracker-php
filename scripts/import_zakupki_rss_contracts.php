@@ -83,12 +83,27 @@ foreach ($rows as $row) {
     if ($contractDate === null) {
         $contractDate = normalizeDate((string) ($parsedNumber['date'] ?? ''));
     }
+    $signedDate = normalizeDate((string) ($row['signed_date'] ?? ''));
+    if ($signedDate === null) {
+        $signedDate = $contractDate;
+    }
+    $executionStartDate = normalizeDate((string) ($row['execution_start_date'] ?? ''));
+    $executionEndDate = normalizeDate((string) ($row['execution_end_date'] ?? ''));
 
     $statusRss = normalizeText((string) ($row['contract_status'] ?? ''));
     $invalidRss = normalizeText((string) ($row['contract_invalid'] ?? ''));
     $mappedStatus = mapRssStatusToContractStatus($statusRss, $invalidRss);
     $amount = parseMoneyAmount((string) ($row['price'] ?? ''));
     $currency = mapCurrency((string) ($row['currency'] ?? ''));
+    $supplierName = normalizeSupplierName((string) ($row['supplier_name'] ?? ''));
+    $supplierInn = normalizeInn((string) ($row['supplier_inn'] ?? ''));
+    $contractSubject = normalizeText((string) ($row['contract_subject'] ?? ''));
+    $contractDocs = normalizeList((string) ($row['contract_docs'] ?? ''));
+    $contractDocUrls = normalizeList((string) ($row['contract_doc_urls'] ?? ''));
+    $paymentDocs = normalizeList((string) ($row['payment_docs'] ?? ''));
+    $paymentDocUrls = normalizeList((string) ($row['payment_doc_urls'] ?? ''));
+    $attachmentFiles = normalizeList((string) ($row['attachment_files'] ?? ''));
+    $attachmentUrls = normalizeList((string) ($row['attachment_urls'] ?? ''));
 
     $customer = normalizeText((string) ($row['customer'] ?? ''));
     $publishedDate = normalizeDate((string) ($row['published_date'] ?? ''));
@@ -135,23 +150,37 @@ foreach ($rows as $row) {
         $customer,
         $publishedDate,
         $updatedDate,
-        $pubDateGmt
+        $pubDateGmt,
+        $signedDate,
+        $executionStartDate,
+        $executionEndDate,
+        $supplierName,
+        $supplierInn,
+        $contractSubject,
+        $contractDocs,
+        $contractDocUrls,
+        $paymentDocs,
+        $paymentDocUrls,
+        $attachmentFiles,
+        $attachmentUrls
     );
 
     if ($existing === null) {
         $newNumber = pickBestNumber($numberToken, $contractNumberRaw, $registryNumber);
+        $defaultSubject = buildSubject($newNumber, $registryNumber);
+        $subjectValue = chooseSubject($contractSubject, $defaultSubject);
         $payload = [
             'number' => $newNumber,
-            'subject' => buildSubject($newNumber, $registryNumber),
+            'subject' => $subjectValue,
             'law_type' => '44',
-            'contractor_name' => 'Контрагент не указан',
-            'contractor_inn' => null,
+            'contractor_name' => $supplierName !== '' ? $supplierName : 'Контрагент не указан',
+            'contractor_inn' => $supplierInn !== '' ? $supplierInn : null,
             'total_amount' => $amount > 0 ? $amount : 0.0,
             'nmck_amount' => null,
             'currency' => $currency,
             'status' => $mappedStatus,
-            'signed_at' => $contractDate,
-            'expires_at' => null,
+            'signed_at' => $signedDate,
+            'expires_at' => $executionEndDate,
             'notes' => $noteBlock,
             'created_by' => $adminId > 0 ? $adminId : null,
         ];
@@ -204,13 +233,26 @@ foreach ($rows as $row) {
     }
 
     $existingSubject = normalizeText((string) ($existing['subject'] ?? ''));
-    if ($existingSubject === '') {
-        $updateData['subject'] = buildSubject($betterNumber !== '' ? $betterNumber : $existingNumber, $registryNumber);
+    $fallbackSubject = buildSubject($betterNumber !== '' ? $betterNumber : $existingNumber, $registryNumber);
+    if (shouldUpdateSubject($existingSubject, $contractSubject)) {
+        $updateData['subject'] = chooseSubject($contractSubject, $fallbackSubject);
+    } elseif ($existingSubject === '') {
+        $updateData['subject'] = $fallbackSubject;
     }
 
     $existingLaw = normalizeText((string) ($existing['law_type'] ?? ''));
     if ($existingLaw !== '44') {
         $updateData['law_type'] = '44';
+    }
+
+    $existingContractorName = normalizeText((string) ($existing['contractor_name'] ?? ''));
+    if (shouldUpdateContractorName($existingContractorName, $supplierName)) {
+        $updateData['contractor_name'] = $supplierName;
+    }
+
+    $existingContractorInn = normalizeInn((string) ($existing['contractor_inn'] ?? ''));
+    if ($supplierInn !== '' && ($existingContractorInn === '' || $existingContractorInn !== $supplierInn)) {
+        $updateData['contractor_inn'] = $supplierInn;
     }
 
     $existingAmount = (float) ($existing['total_amount'] ?? 0);
@@ -230,8 +272,13 @@ foreach ($rows as $row) {
     }
 
     $existingSigned = normalizeDate((string) ($existing['signed_at'] ?? ''));
-    if ($existingSigned === null && $contractDate !== null) {
-        $updateData['signed_at'] = $contractDate;
+    if ($signedDate !== null && ($existingSigned === null || $existingSigned !== $signedDate)) {
+        $updateData['signed_at'] = $signedDate;
+    }
+
+    $existingExpires = normalizeDate((string) ($existing['expires_at'] ?? ''));
+    if ($executionEndDate !== null && ($existingExpires === null || $existingExpires !== $executionEndDate)) {
+        $updateData['expires_at'] = $executionEndDate;
     }
 
     $existingNotes = (string) ($existing['notes'] ?? '');
@@ -406,7 +453,48 @@ function normalizeDate(string $value): ?string
     if (preg_match('/^(\d{4}-\d{2}-\d{2})/', $value, $m)) {
         return (string) $m[1];
     }
+    if (preg_match('/^(\d{2}\.\d{2}\.\d{4})/u', $value, $m)) {
+        $dt = DateTimeImmutable::createFromFormat('d.m.Y', (string) $m[1]);
+        if ($dt instanceof DateTimeImmutable) {
+            return $dt->format('Y-m-d');
+        }
+    }
     return null;
+}
+
+function normalizeInn(string $value): string
+{
+    $digits = digitsOnly($value);
+    return strlen($digits) === 10 || strlen($digits) === 12 ? $digits : '';
+}
+
+function normalizeSupplierName(string $value): string
+{
+    return normalizeText($value);
+}
+
+function normalizeList(string $value): string
+{
+    $value = normalizeText($value);
+    if ($value === '') {
+        return '';
+    }
+    $parts = preg_split('/\s*;\s*/u', $value) ?: [];
+    $seen = [];
+    $result = [];
+    foreach ($parts as $part) {
+        $part = normalizeText((string) $part);
+        if ($part === '') {
+            continue;
+        }
+        $key = mbLower($part);
+        if (isset($seen[$key])) {
+            continue;
+        }
+        $seen[$key] = true;
+        $result[] = $part;
+    }
+    return implode('; ', $result);
 }
 
 function parseMoneyAmount(string $value): float
@@ -515,7 +603,19 @@ function buildEisNoteBlock(
     string $customer,
     ?string $publishedDate,
     ?string $updatedDate,
-    string $pubDateGmt
+    string $pubDateGmt,
+    ?string $signedDate,
+    ?string $executionStartDate,
+    ?string $executionEndDate,
+    string $supplierName,
+    string $supplierInn,
+    string $contractSubject,
+    string $contractDocs,
+    string $contractDocUrls,
+    string $paymentDocs,
+    string $paymentDocUrls,
+    string $attachmentFiles,
+    string $attachmentUrls
 ): string {
     $lines = [];
     if ($registryNumber !== '') {
@@ -534,6 +634,21 @@ function buildEisNoteBlock(
     if ($customer !== '') {
         $lines[] = '[ЕИС] Заказчик: ' . $customer;
     }
+    if ($supplierName !== '') {
+        $lines[] = '[ЕИС] Поставщик: ' . $supplierName;
+    }
+    if ($supplierInn !== '') {
+        $lines[] = '[ЕИС] ИНН поставщика: ' . $supplierInn;
+    }
+    if ($contractSubject !== '') {
+        $lines[] = '[ЕИС] Предмет: ' . $contractSubject;
+    }
+    if ($signedDate !== null) {
+        $lines[] = '[ЕИС] Заключен: ' . $signedDate;
+    }
+    if ($executionStartDate !== null || $executionEndDate !== null) {
+        $lines[] = '[ЕИС] Исполнение: c ' . ($executionStartDate ?? '—') . ' по ' . ($executionEndDate ?? '—');
+    }
     if ($publishedDate !== null) {
         $lines[] = '[ЕИС] Размещено: ' . $publishedDate;
     }
@@ -542,6 +657,24 @@ function buildEisNoteBlock(
     }
     if ($pubDateGmt !== '') {
         $lines[] = '[ЕИС] pubDate: ' . $pubDateGmt;
+    }
+    if ($contractDocs !== '') {
+        $lines[] = '[ЕИС] Файлы договора: ' . $contractDocs;
+    }
+    if ($contractDocUrls !== '') {
+        $lines[] = '[ЕИС] Ссылки договора: ' . $contractDocUrls;
+    }
+    if ($paymentDocs !== '') {
+        $lines[] = '[ЕИС] Платежные документы: ' . $paymentDocs;
+    }
+    if ($paymentDocUrls !== '') {
+        $lines[] = '[ЕИС] Ссылки платежей: ' . $paymentDocUrls;
+    }
+    if ($attachmentFiles !== '') {
+        $lines[] = '[ЕИС] Вложения: ' . $attachmentFiles;
+    }
+    if ($attachmentUrls !== '') {
+        $lines[] = '[ЕИС] Ссылки вложений: ' . $attachmentUrls;
     }
     return implode(PHP_EOL, $lines);
 }
@@ -588,6 +721,48 @@ function buildSubject(string $number, string $registryNumber): string
         return 'Контракт ЕИС № ' . $number . ' (реестр ' . $registryNumber . ')';
     }
     return 'Контракт ЕИС № ' . $number;
+}
+
+function chooseSubject(string $incomingSubject, string $fallbackSubject): string
+{
+    return $incomingSubject !== '' ? $incomingSubject : $fallbackSubject;
+}
+
+function shouldUpdateSubject(string $existingSubject, string $incomingSubject): bool
+{
+    if ($incomingSubject === '') {
+        return false;
+    }
+    if ($existingSubject === '') {
+        return true;
+    }
+    return isPlaceholderSubject($existingSubject);
+}
+
+function isPlaceholderSubject(string $subject): bool
+{
+    $subject = mbLower(normalizeText($subject));
+    return startsWith($subject, 'контракт еис №');
+}
+
+function shouldUpdateContractorName(string $existingName, string $incomingName): bool
+{
+    if ($incomingName === '') {
+        return false;
+    }
+    if ($existingName === '') {
+        return true;
+    }
+    return isPlaceholderContractorName($existingName);
+}
+
+function isPlaceholderContractorName(string $name): bool
+{
+    $low = mbLower(normalizeText($name));
+    if ($low === '' || $low === '-' || $low === 'контрагент не указан') {
+        return true;
+    }
+    return contains($low, 'не указан');
 }
 
 function isWeakNumber(string $number): bool
