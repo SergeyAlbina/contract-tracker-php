@@ -46,6 +46,8 @@ def parse_decimal(value: Any) -> float | None:
     if value is None:
         return None
     if isinstance(value, (int, float)):
+        if pd.isna(value):
+            return None
         return round(float(value), 2)
 
     text = norm_space(value)
@@ -397,94 +399,95 @@ def normalize_tasks_workbook(path: Path) -> NormalizeResult:
 
 def normalize_claims_registry(path: Path) -> NormalizeResult:
     wb = load_workbook(path, data_only=True)
-    ws = wb.active
 
     rows: list[dict[str, Any]] = []
     issues: list[dict[str, Any]] = []
 
-    year: int | None = None
-    reg_no = 0
-    for r in range(1, ws.max_row + 1):
-        contractor = ws.cell(r, 1).value
-        contract_ref = ws.cell(r, 2).value
-        claimed = ws.cell(r, 3).value
-        paid = ws.cell(r, 4).value
-        payment_ref = ws.cell(r, 5).value
-        writeoff_ref = ws.cell(r, 6).value
-        note = ws.cell(r, 7).value
+    for ws in wb.worksheets:
+        year: int | None = None
+        reg_no = 0
 
-        first = norm_space(contractor)
-        if re.fullmatch(r"20\d{2}\s*год", first):
-            year = int(first[:4])
-            reg_no = 0
-            continue
+        for r in range(1, ws.max_row + 1):
+            contractor = ws.cell(r, 1).value
+            contract_ref = ws.cell(r, 2).value
+            claimed = ws.cell(r, 3).value
+            paid = ws.cell(r, 4).value
+            payment_ref = ws.cell(r, 5).value
+            writeoff_ref = ws.cell(r, 6).value
+            note = ws.cell(r, 7).value
 
-        if first and norm_space(contract_ref) and parse_decimal(claimed) is not None:
-            reg_no += 1
-            claim_val = parse_decimal(claimed)
-            paid_val = parse_decimal(paid)
-            contract_text = norm_space(contract_ref)
-            contract_date = parse_contract_date(contract_text)
+            first = norm_space(contractor)
+            if re.fullmatch(r"20\d{2}\s*год", first):
+                year = int(first[:4])
+                reg_no = 0
+                continue
 
-            status_raw_parts = []
-            if paid_val is not None:
-                status_raw_parts.append(f"Оплачено {paid_val}")
-            if norm_space(writeoff_ref):
-                status_raw_parts.append("Списание по ПП 783")
-            if not status_raw_parts:
-                status_raw_parts.append("Претензия выставлена")
-            result_raw = "; ".join(status_raw_parts)
+            if first and norm_space(contract_ref) and parse_decimal(claimed) is not None:
+                reg_no += 1
+                claim_val = parse_decimal(claimed)
+                paid_val = parse_decimal(paid)
+                contract_text = norm_space(contract_ref)
+                contract_date = parse_contract_date(contract_text)
 
-            notes_parts = []
-            if norm_space(payment_ref):
-                notes_parts.append(f"Платежка: {norm_space(payment_ref)}")
-            if norm_space(writeoff_ref):
-                notes_parts.append(norm_space(writeoff_ref))
-            if norm_space(note):
-                notes_parts.append(norm_space(note))
+                status_raw_parts = []
+                if paid_val is not None:
+                    status_raw_parts.append(f"Оплачено {paid_val}")
+                if norm_space(writeoff_ref):
+                    status_raw_parts.append("Списание по ПП 783")
+                if not status_raw_parts:
+                    status_raw_parts.append("Претензия выставлена")
+                result_raw = "; ".join(status_raw_parts)
 
-            bundle_key = make_bundle_key(
-                "claims_registry",
-                [year, contractor, contract_ref, claimed],
-            )
+                notes_parts = []
+                if norm_space(payment_ref):
+                    notes_parts.append(f"Платежка: {norm_space(payment_ref)}")
+                if norm_space(writeoff_ref):
+                    notes_parts.append(norm_space(writeoff_ref))
+                if norm_space(note):
+                    notes_parts.append(norm_space(note))
 
-            rows.append(
-                {
-                    "source_file": path.name,
-                    "source_sheet": ws.title,
-                    "source_row": r,
-                    "source_kind": "claims_registry",
-                    "block_type": "CLAIMS",
-                    "year": year,
-                    "reg_no": reg_no,
-                    "case_code": None,
-                    "subject_raw": f"Претензия к {first} по контракту {contract_text}",
-                    "subject_clean": None,
-                    "budget_article": None,
-                    "procurement_form": None,
-                    "amount_planned": claim_val,
-                    "rnmc_amount": None,
-                    "task_date": None,
-                    "stage_raw": None,
-                    "due_date": None,
-                    "notes": " | ".join(notes_parts) if notes_parts else None,
-                    "archive_path": None,
-                    "result_raw": result_raw,
-                    "result_status": "DONE" if (paid_val is not None or norm_space(writeoff_ref)) else None,
-                    "result_amount": paid_val if paid_val is not None else None,
-                    "result_percent": 100 if (paid_val is not None or norm_space(writeoff_ref)) else None,
-                    "contract_ref_raw": contract_text,
-                    "contract_number": contract_text,
-                    "contract_date": contract_date,
-                    "contract_amount": None,
-                    "bundle_key": bundle_key,
-                    "assignees_text": None,
-                    "assignees_list": None,
-                }
-            )
-        elif first and norm_space(contract_ref) == "" and parse_decimal(claimed) is None:
-            # likely a header/extra line; ignore silently
-            continue
+                bundle_key = make_bundle_key(
+                    "claims_registry",
+                    [ws.title, year, contractor, contract_ref, claimed],
+                )
+
+                rows.append(
+                    {
+                        "source_file": path.name,
+                        "source_sheet": ws.title,
+                        "source_row": r,
+                        "source_kind": "claims_registry",
+                        "block_type": "CLAIMS",
+                        "year": year,
+                        "reg_no": reg_no,
+                        "case_code": None,
+                        "subject_raw": f"Претензия к {first} по контракту {contract_text}",
+                        "subject_clean": None,
+                        "budget_article": None,
+                        "procurement_form": None,
+                        "amount_planned": claim_val,
+                        "rnmc_amount": None,
+                        "task_date": None,
+                        "stage_raw": None,
+                        "due_date": None,
+                        "notes": " | ".join(notes_parts) if notes_parts else None,
+                        "archive_path": None,
+                        "result_raw": result_raw,
+                        "result_status": "DONE" if (paid_val is not None or norm_space(writeoff_ref)) else None,
+                        "result_amount": paid_val if paid_val is not None else None,
+                        "result_percent": 100 if (paid_val is not None or norm_space(writeoff_ref)) else None,
+                        "contract_ref_raw": contract_text,
+                        "contract_number": contract_text,
+                        "contract_date": contract_date,
+                        "contract_amount": None,
+                        "bundle_key": bundle_key,
+                        "assignees_text": None,
+                        "assignees_list": None,
+                    }
+                )
+            elif first and norm_space(contract_ref) == "" and parse_decimal(claimed) is None:
+                # likely a header/extra line; ignore silently
+                continue
 
     # quality checks
     if not rows:
